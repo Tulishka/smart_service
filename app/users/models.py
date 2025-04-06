@@ -1,8 +1,10 @@
+import uuid
 from enum import Enum as PyEnum
 
 from flask_login import UserMixin
-from sqlalchemy import Integer, String, Column, ForeignKey, Enum
+from sqlalchemy import Integer, String, Column, ForeignKey, Enum, Uuid
 
+from app.database import model_const as mc
 from app import db
 
 
@@ -20,12 +22,12 @@ class User(db.Model, UserModelMix):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(100), nullable=False)
-    phone = Column(String(20), nullable=False)
-    email = Column(String(100), unique=True)
-    password = Column(String(255))
+    name = Column(String(mc.NAME_LEN), nullable=False)
+    phone = Column(String(mc.PHONE_LEN), nullable=False)
+    password = Column(String(mc.SHORT_LEN))
     department_id = Column(ForeignKey("departments.id", ondelete="SET NULL"))
     status = Column(Enum(UserStatus), nullable=False)
+    auid = Column(Uuid(), default=lambda: str(uuid.uuid4()))
 
     roles = db.relationship("Role", secondary="users_roles", backref=db.backref("users", lazy="dynamic"))
     department = db.relationship("Department", back_populates="users")
@@ -36,7 +38,7 @@ class Department(db.Model):
     __tablename__ = "departments"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(100), nullable=False, unique=True)
+    name = Column(String(mc.NAME_LEN), nullable=False, unique=True)
 
     users = db.relationship("User", back_populates="department")
     asset_options = db.relationship("AssetOption", back_populates="department")
@@ -47,7 +49,7 @@ class Role(db.Model):
     __tablename__ = "roles"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(100), unique=True, nullable=False)
+    name = Column(String(mc.NAME_LEN), unique=True, nullable=False)
 
     user_roles = db.relationship("UserRole", back_populates="role")
 
