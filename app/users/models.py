@@ -1,7 +1,14 @@
+from enum import Enum as PyEnum
+
 from flask_login import UserMixin
-from sqlalchemy import Integer, String, Column, ForeignKey
+from sqlalchemy import Integer, String, Column, ForeignKey, Enum
 
 from app import db
+
+
+class UserStatus(PyEnum):
+    ACTIVE = 'ДОСТУПЕН'
+    INACTIVE = 'НЕ ДОСТУПЕН'
 
 
 class UserModelMix(UserMixin):
@@ -18,12 +25,11 @@ class User(db.Model, UserModelMix):
     email = Column(String(100), unique=True)
     password = Column(String(255))
     department_id = Column(ForeignKey("departments.id", ondelete="SET NULL"))
-    status = Column(Integer, nullable=False)
+    status = Column(Enum(UserStatus), nullable=False)
 
     roles = db.relationship("Role", secondary="users_roles", backref=db.backref("users", lazy="dynamic"))
     department = db.relationship("Department", back_populates="users")
     assigned_tickets = db.relationship("Ticket", back_populates="assignee", foreign_keys="Ticket.assignee_id")
-
 
 
 class Department(db.Model):
