@@ -14,6 +14,7 @@ db = SQLAlchemy(app)
 
 login_manager = LoginManager()
 login_manager.init_app(app)
+login_manager.login_view = "auth.login"
 
 with app.app_context():
     from app.database import all_models
