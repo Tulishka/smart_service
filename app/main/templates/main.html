@@ -8,6 +8,7 @@
             <li>Вход выполнен! <a href="{{ url_for('auth.logout') }}">(выйти)</a></li>
         {% else %}
             <li><a href="{{ url_for('auth.login') }}">Войти</a></li>
+            <li><a href="{{ url_for('auth.register') }}">Зарегистрироваться</a></li>
         {% endif %}
     </ul>
 {% endblock %}
