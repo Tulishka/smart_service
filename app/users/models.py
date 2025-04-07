@@ -34,7 +34,8 @@ class User(db.Model, UserModelMix):
     roles = db.relationship("Role", secondary="users_roles", backref=db.backref("users", lazy="dynamic"))
     department = db.relationship("Department", back_populates="users")
 
-    # assigned_tickets = db.relationship("Ticket", back_populates="assignee", foreign_keys="Ticket.assignee_id")
+    assigned_tickets = db.relationship("Ticket", back_populates="assignee", foreign_keys="Ticket.assignee_id")
+    created_tickets = db.relationship("Ticket", back_populates="creator", foreign_keys="Ticket.creator_id")
 
     def check_password(self, password):
         hashed_password = generate_password_hash(password)
@@ -49,7 +50,7 @@ class Department(db.Model):
 
     users = db.relationship("User", back_populates="department")
     asset_options = db.relationship("AssetOption", back_populates="department")
-    # tickets = db.relationship("Ticket", back_populates="department")
+    tickets = db.relationship("Ticket", back_populates="department")
 
 
 class Role(db.Model):

@@ -38,7 +38,7 @@ class Asset(db.Model):
     details = Column(String(mc.DESCR_LEN))
 
     type = db.relationship("AssetType", back_populates="assets")
-    # tickets = db.relationship("Ticket", back_populates="asset")
+    tickets = db.relationship("Ticket", back_populates="asset")
 
 
 class AssetOption(db.Model):
