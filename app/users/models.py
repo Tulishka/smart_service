@@ -26,7 +26,7 @@ class User(db.Model, UserModelMix):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(mc.NAME_LEN), nullable=False)
     phone = Column(String(mc.PHONE_LEN), unique=True, nullable=False)
-    password = Column(String(mc.SHORT_LEN), nullable=True)
+    hashed_password = Column(String(mc.SHORT_LEN), nullable=True)
     department_id = Column(ForeignKey("departments.id", ondelete="SET NULL"), nullable=True)
     status = Column(Enum(UserStatus), nullable=False)
     auid = Column(Uuid(), default=lambda: uuid.uuid4())
@@ -38,8 +38,10 @@ class User(db.Model, UserModelMix):
     created_tickets = db.relationship("Ticket", back_populates="creator", foreign_keys="Ticket.creator_id")
 
     def check_password(self, password):
-        hashed_password = generate_password_hash(password)
-        return self.password == hashed_password
+        return werkzeug.security.check_password_hash(self.hashed_password, password)
+
+    def set_password(self, password):
+        self.hashed_password = generate_password_hash(password)
 
 
 class Department(db.Model):

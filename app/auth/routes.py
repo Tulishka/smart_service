@@ -1,8 +1,10 @@
 from flask import Blueprint, request, redirect, render_template, url_for, flash
 from flask_login import login_user, current_user, logout_user
 
-from app.auth.forms import LoginForm
-from app.users.models import User
+from app.auth.forms import LoginForm, RegisterForm
+from app.users.models import User, UserStatus
+
+from app import db
 
 bp = Blueprint("auth", __name__, url_prefix="/", template_folder="templates")
 
@@ -26,6 +28,29 @@ def login():
             return redirect(redirect_url)
 
     return render_template("login.html", form=form)
+
+
+@bp.route("register", methods=["GET", "POST"])
+def register():
+    form = RegisterForm()
+    if form.validate_on_submit():
+        if form.password.data != form.password_again.data:
+            flash("Пароли не совпадают", category="danger")
+        elif User.query.filter_by(phone=form.phone.data).first():
+            flash("Пользователь с таким номером уже существует", category="danger")
+        else:
+            user = User(
+                phone=form.phone.data,
+                name=form.name.data,
+                status=UserStatus.ACTIVE
+            )
+            user.set_password(form.password.data)
+            db.session.add(user)
+            db.session.commit()
+            flash("Регистрация прошла успешно", category="success")
+            redirect(url_for("users.user_list"))
+
+    return render_template("register.html", form=form)
 
 
 @bp.route("logout", methods=["GET", "POST"])
