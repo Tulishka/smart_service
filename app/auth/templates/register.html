@@ -1,0 +1,11 @@
+{% extends "base_form.html" %}
+
+{% block form_title %}
+    Выполните регистрацию
+{% endblock %}
+
+{% block form_footer %}
+    <div class="d-flex justify-content-between mt-4">
+        <a href="{{ url_for('auth.login') }}" class="text-decoration-none text-primary">Вход</a>
+    </div>
+{% endblock %}

@@ -7,6 +7,6 @@
 {% block form_footer %}
     <div class="d-flex justify-content-between mt-4">
         <a href="#" class="text-decoration-none text-primary">Не помню пароль</a>
-        <a href="#" class="text-decoration-none text-primary">Регистрация</a>
+        <a href="{{ url_for('auth.register') }}" class="text-decoration-none text-primary">Регистрация</a>
     </div>
 {% endblock %}
