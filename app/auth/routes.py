@@ -32,6 +32,8 @@ def login():
 
 @bp.route("register", methods=["GET", "POST"])
 def register():
+    redirect_url = request.args.get("next") or url_for("main.index")
+
     form = RegisterForm()
     if form.validate_on_submit():
         if form.password.data != form.password_again.data:
@@ -47,8 +49,10 @@ def register():
             user.set_password(form.password.data)
             db.session.add(user)
             db.session.commit()
+
             login_user(user)
             flash("Регистрация прошла успешно", category="success")
+            return redirect(redirect_url)
 
     return render_template("register.html", form=form)
 
