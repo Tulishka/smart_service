@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-4">
+    <h2 class="text-center mb-4">{% block form_title %}Заголовок формы{% endblock %}</h2>
+
+    <form method="POST" {% if action_url %} action="{{ action_url }}" {% endif %} novalidate>
+      {{ form.hidden_tag() }}
+
+      {% for field in form if field.widget.input_type != 'hidden' %}
+        {% if field.type == 'SubmitField' %}
+          <div class="text-end mt-3">
+            {{ field(class="btn btn-primary") }}
+          </div>
+        {% elif field.type == 'BooleanField' %}
+          <div class="mb-3 form-check">
+            {{ field(class="form-check-input" + (" is-invalid" if field.errors else "")) }}
+            {{ field.label(class="form-check-label") }}
+          </div>
+        {% else %}
+          <div class="mb-3">
+            {{ field.label(class="form-label") }}
+            {{ field(class="form-control" + (" is-invalid" if field.errors else "")) }}
+            {% if field.errors %}
+              <div class="invalid-feedback">
+                {% for error in field.errors %}
+                  {{ error }}
+                {% endfor %}
+              </div>
+            {% endif %}
+          </div>
+        {% endif %}
+      {% endfor %}
+    {% block form_footer %}{% endblock %}
+    </form>
+  </div>
+</div>
+{% endblock %}
