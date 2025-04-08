@@ -6,7 +6,7 @@
 
 {% block form_footer %}
     <div class="d-flex justify-content-between mt-4">
-        <a href="{{ url_for('auth.login', next=request.args.get('next'))) }}" class="text-decoration-none text-primary">Вход</a>
+        <a href="{{ url_for('auth.login', next=request.args.get('next')) }}" class="text-decoration-none text-primary">Вход</a>
         <a href="{{ url_for('main.index') }}">Главная страница</a>
     </div>
 {% endblock %}
