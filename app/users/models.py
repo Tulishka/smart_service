@@ -31,7 +31,7 @@ class User(db.Model, UserModelMix):
     status = Column(Enum(UserStatus), nullable=False)
     auid = Column(Uuid(), default=lambda: uuid.uuid4())
 
-    roles = db.relationship("Role", secondary="users_roles", backref=db.backref("users", lazy="dynamic"))
+    roles = db.relationship("Role", secondary="users_roles", backref=db.backref("users", lazy="joined"), lazy="joined")
     department = db.relationship("Department", back_populates="users")
 
     assigned_tickets = db.relationship("Ticket", back_populates="assignee", foreign_keys="Ticket.assignee_id")
@@ -42,6 +42,9 @@ class User(db.Model, UserModelMix):
 
     def set_password(self, password):
         self.hashed_password = generate_password_hash(password)
+
+    def role_names(self):
+        return ", ".join(role.name for role in self.roles)
 
 
 class Department(db.Model):

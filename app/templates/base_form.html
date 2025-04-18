@@ -10,7 +10,7 @@
       <div class="card-body">
         <form method="POST" {% if action_url %} action="{{ action_url }}" {% endif %} novalidate>
           {{ form.hidden_tag() }}
-
+          {% block form_content %}
           {% for field in form if field.widget.input_type != 'hidden' %}
           {% if field.type == 'SubmitField' %}
           <div class="text-end mt-3">
@@ -35,6 +35,7 @@
           </div>
           {% endif %}
           {% endfor %}
+          {% endblock %}
         </form>
       </div>
       <div class="card-footer text-body-secondary">
