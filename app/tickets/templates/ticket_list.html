@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h3>Заявки</h3>
+<table class="table">
+  <thead>
+  <tr>
+    <th scope="col">#</th>
+    <th scope="col">Дата создания</th>
+    <th scope="col">Асет</th>
+    <th scope="col">Отдел</th>
+    <th scope="col">Исполнитель</th>
+    <th scope="col">Статус</th>
+    <th scope="col">Результат</th>
+  </tr>
+  </thead>
+  <tbody>
+  {% for ticket in tickets %}
+  <tr onclick="location='{{ url_for('tickets.edit', ticket=ticket.id) }}'">
+    <th scope="row">{{ loop.index }}</th>
+    <td>{{ ticket.created }}</td>
+    <td>{{ ticket.asset }}</td>
+    <td>{{ ticket.department }}</td>
+    <td>{{ ticket.assignee }}</td>
+    <td>{{ ticket.status.value }}</td>
+    <td>{{ ticket.result.value }}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
