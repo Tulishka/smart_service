@@ -1,14 +1,9 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <h3>ГЛАВНАЯ СТРАНИЦА</h3>
-    <ul>
-        <li><a href="{{ url_for('users.user_list') }}">Пользователи</a></li>
-        {% if current_user.is_authenticated %}
-            <li>Вход выполнен! <a href="{{ url_for('auth.logout') }}">(выйти)</a></li>
-        {% else %}
-            <li><a href="{{ url_for('auth.login') }}">Войти</a></li>
-            <li><a href="{{ url_for('auth.register') }}">Зарегистрироваться</a></li>
-        {% endif %}
-    </ul>
+<h3>ГЛАВНАЯ СТРАНИЦА</h3>
+<p>
+  Добро пожаловать в наш умный офис, пристегните ремни - мы заряжаем наши
+QR-<a target="_blank" href="https://rutube.ru/video/e451e590a3d6f98df04fdfbe18ddac1b/?r=wd&t=3127">эмбергере</a>!
+</p>
 {% endblock %}

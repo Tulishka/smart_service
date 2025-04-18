@@ -1,14 +1,40 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+.content-wrapper {
+  flex: 1;
+  padding-top:70px;
+}
+header {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 1000;
+}
+.navbar {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
 tr:hover td, th {
-background: #ece9f7;
-cursor: pointer;
+  background: #ece9f7;
+  cursor: pointer;
 }
+
 .checkbox-list {
-    border: 1px solid #ddd;
-    padding: 10px;
-    border-radius: 4px;
-    max-height: 200px;
-    overflow-y: auto;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 4px;
+  max-height: 200px;
+  overflow-y: auto;
 }
+
 .form-check {
-    margin-bottom: 5px;
+  margin-bottom: 5px;
 }

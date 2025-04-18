@@ -20,7 +20,11 @@ login_manager.login_message_category = "info"
 
 with app.app_context():
     from app.database import all_models
+    from app.database.init_db import create_initial_objects
+
     db.create_all()
+    create_initial_objects(db)
 
 from app.modules import register_blueprints
+
 register_blueprints(app)
