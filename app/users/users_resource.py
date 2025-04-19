@@ -1,7 +1,7 @@
 from flask_restful import Resource, abort
 from flask import jsonify
 
-from app.users.models import User, Role, Department
+from app.users.models import User, Role, Department, users_roles
 from app.users.parsers import standart_parser
 
 from flask_login import current_user
@@ -45,6 +45,9 @@ class UsersResource(Resource):
         abort_if_no_access()
         abort_if_user_not_found(user_id)
         user = User.query.get(user_id)
+
+        users_roles.delete().where(users_roles.c.user_id == user_id)
+
         db.session.delete(user)
         db.session.commit()
         return jsonify({"success": "OK"})
