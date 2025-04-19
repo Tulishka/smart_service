@@ -1,5 +1,7 @@
 flask
 flask-wtf
 flask-login
+flask-restful
 Flask-SQLAlchemy
 python-dotenv
+requests

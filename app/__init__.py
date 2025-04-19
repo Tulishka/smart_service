@@ -26,5 +26,7 @@ with app.app_context():
     create_initial_objects(db)
 
 from app.modules import register_blueprints
+from app.modules import api_setup
 
 register_blueprints(app)
+api_setup(app)
