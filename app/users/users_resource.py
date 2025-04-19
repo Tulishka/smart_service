@@ -52,6 +52,32 @@ class UsersResource(Resource):
         db.session.commit()
         return jsonify({"success": "OK"})
 
+    def put(self, user_id):
+        abort_if_no_access()
+        abort_if_user_not_found(user_id)
+        args = unrequired_parser.parser.parse_args()
+
+        new_user_data = {}
+        for key, value in args.items():
+            if value is not None:
+                new_user_data[key] = value
+
+        user = User.query.get(user_id)
+        user.name = new_user_data.get("name", user.name)
+        user.phone = new_user_data.get("phone", user.phone)
+
+        if "department_id" in new_user_data.keys():
+            if Department.query.get(new_user_data["department_id"]):
+                user.department_id = new_user_data["department_id"]
+
+        if "password" in new_user_data.keys():
+            if len(new_user_data["password"]) >= 5:
+                user.set_password(new_user_data["password"])
+            else:
+                abort("400", message=F"the password length must be >= 5")
+        db.session.commit()
+        return jsonify({"success": "OK"})
+
 
 class UsersListResource(Resource):
     def get(self):
