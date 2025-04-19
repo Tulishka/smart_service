@@ -2,9 +2,9 @@ from flask_restful import Resource, abort
 from flask import jsonify
 
 from app.users.models import User, Role, Department, users_roles
-from app.users.parsers import standart_parser
+from app.users.parsers import standart_parser, unrequired_parser, login_parser
 
-from flask_login import current_user
+from flask_login import current_user, login_user
 
 from app import db
 
@@ -72,3 +72,14 @@ class UsersListResource(Resource):
         db.session.commit()
 
         return jsonify({"id": user.id})
+
+
+class LoginResource(Resource):
+    def post(self):
+        args = login_parser.parser.parse_args()
+        user = User.query.filter_by(phone=args["phone"]).first()
+        if not user or not user.check_password(args["password"]):
+            abort("404", message="incorrect phone or password")
+        else:
+            login_user(user)
+            return jsonify({"success": "OK"})
