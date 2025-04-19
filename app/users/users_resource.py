@@ -26,7 +26,10 @@ def user_to_dict(user):
 
 
 class UsersResource(Resource):
-    pass
+    def get(self, user_id):
+        abort_if_user_not_found(user_id)
+        user = user_to_dict(User.query.get(user_id))
+        return jsonify({"users": user})
 
 
 class UsersListResource(Resource):
