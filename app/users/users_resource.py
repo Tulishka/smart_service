@@ -2,6 +2,9 @@ from flask_restful import Resource, abort
 from flask import jsonify
 
 from app.users.models import User, Role, Department
+from app.users.parsers import standart_parser
+
+from app import db
 
 
 def abort_if_user_not_found(user_id):
@@ -32,4 +35,14 @@ class UsersListResource(Resource):
         return jsonify({"users": users})
 
     def post(self):
-        pass
+        args = standart_parser.parser.parse_args()
+        user = User()
+
+        user.status = "ACTIVE"
+        user.name = args["name"]
+        user.phone = args["phone"]
+        user.set_password(args["password"])
+        db.session.add(user)
+        db.session.commit()
+
+        return jsonify({"id": user.id})
