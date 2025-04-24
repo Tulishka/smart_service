@@ -2,4 +2,25 @@
 
 {% block content %}
 <h3>Виды ассетов <a href="{{ url_for('assets.index') }}">Ассеты</a></h3>
+<table class="table">
+  <thead>
+  <tr>
+    <th scope="col">#</th>
+    <th scope="col">Изображение</th>
+    <th scope="col">Название</th>
+    <th scope="col">Описание</th>
+  </tr>
+  </thead>
+  <tbody>
+  {% for asset_type in data %}
+  <tr onclick="location='{{ url_for('assets.type_show', type_id=asset_type.id) }}'">
+    <th scope="row">{{ loop.index }}</th>
+    <td><img width="150" src="{{ url_for('static', filename='/img/assets_types/' + asset_type.image) }}"></td>
+    <td>{{ asset_type.name }}</td>
+    <td>{{ asset_type.description }}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
 {% endblock %}
