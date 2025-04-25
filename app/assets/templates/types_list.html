@@ -13,7 +13,7 @@
   </thead>
   <tbody>
   {% for asset_type in data %}
-  <tr onclick="location='{{ url_for('assets.type_show', type_id=asset_type.id) }}'">
+  <tr onclick="location='{{ url_for('assets.asset_type_show', type_id=asset_type.id) }}'">
     <th scope="row">{{ loop.index }}</th>
     <td><img width="150" src="{{ url_for('static', filename='/img/assets_types/' + asset_type.image) }}"></td>
     <td>{{ asset_type.name }}</td>
