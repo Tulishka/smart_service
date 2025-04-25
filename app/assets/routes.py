@@ -1,3 +1,5 @@
+import os
+
 from flask import Blueprint, render_template, request, flash, url_for, redirect
 from app.assets.models import AssetType
 from app.assets.forms import AssetTypeForm
@@ -5,49 +7,57 @@ from app import db
 
 bp = Blueprint("assets", __name__, url_prefix="/assets", template_folder="templates")
 
+os.makedirs("app/static/assets/uploads", exist_ok=True)
+os.makedirs("app/static/assets/qr", exist_ok=True)
 
 @bp.route("/")
 def index():
     return render_template("assets_list.html")
 
 
+@bp.route("/type/<int:type_id>", methods=["GET", "POST"])
+def edit_type(type_id=0):
+    asset_type = db.session.query(AssetType).filter_by(id=type_id).one_or_none()
+    if request.method == "GET":
+        if asset_type:
+            form = AssetTypeForm(
+                name=asset_type.name,
+                description=asset_type.description,
+                image=asset_type.image
+            )
+        else:
+            form = AssetTypeForm()
+    else:
+        form = AssetTypeForm()
+        if form.validate_on_submit():
+            if AssetType.query.filter((AssetType.name == form.name.data) & (AssetType.id != type_id)).first():
+                form.name.errors = ("название вида асета занято",)
+            else:
+                file_binary = form.image.data.read()
+                if not file_binary:
+                    image_address = None
+                else:
+                    image_address = form.name.data.replace(".", "-") + ".png"
+                    with open("app/static/assets/uploads/" + image_address, "wb") as file:
+                        file.write(file_binary)
+                if not asset_type:
+                    asset_type = AssetType()
+                asset_type.name = form.name.data
+                asset_type.description = form.description.data
+                asset_type.qr_help_text = "qr_help_text"
+                if image_address:
+                    asset_type.image = image_address
+
+                db.session.add(asset_type)
+                db.session.commit()
+
+                flash(f"Вид асетов {asset_type.name} успешно добавлен", category="info")
+                return redirect(url_for("assets.types"))
+
+    return render_template("asset_type_form.html", form=form)
+
+
 @bp.route("/types")
 def types():
     data = AssetType.query.all()
     return render_template("types_list.html", data=data)
-
-
-@bp.route("/type_show/<int:type_id>")
-def asset_type_show(type_id):
-    return render_template("types_show.html", type=type_id)
-
-
-@bp.route("/add_type", methods=["GET", "POST"])
-def add_type():
-    form = AssetTypeForm()
-    if form.validate_on_submit():
-        if form.name.data.lower() in [asset_type.name.lower() for asset_type in AssetType.query.all()]:
-            form.name.errors = ("Вид ассетов с таким названием уже существует",)
-        else:
-            file_binary = form.image.data.read()
-            if not file_binary:
-                image_address = "assets_standart_image.png"
-            else:
-                image_address = form.name.data.replace(".", "-") + ".png"
-                with open("app/static/img/assets_types/" + image_address, "wb") as file:
-                    file.write(file_binary)
-            asset_type = AssetType(
-                name=form.name.data,
-                description=form.description.data,
-                qr_help_text="qr_help_text",
-                image=image_address
-            )
-            print(bool(file_binary))
-
-            db.session.add(asset_type)
-            db.session.commit()
-
-            flash(f"Вид ассетов {asset_type.name} успешно добавлен", category="info")
-            return redirect(url_for("assets.types"))
-
-    return render_template("add_type.html", form=form)
