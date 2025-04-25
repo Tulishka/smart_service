@@ -3,7 +3,7 @@ import requests
 
 with requests.Session() as session:
     # Вход в систему под данными первого пользователя
-    pprint(session.post("http://127.0.0.1:5000/api/login", json={"phone": "+222", "password": "12345"}).json())
+    pprint(session.post("http://127.0.0.1:5000/api/login", json={"phone": "0", "password": "admin"}).json())
 
     print("--" * 20)
 
