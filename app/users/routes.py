@@ -47,11 +47,3 @@ def edit(user):
 
     form.roles.data = [role.id for role in user.roles]
     return render_template("user_form.html", form=form)
-
-
-@bp.route("/", methods=["POST"])
-def reset_pass():
-    users = db.session.query(User).all()
-    return render_template("user_list.html", users=users)
-
-
