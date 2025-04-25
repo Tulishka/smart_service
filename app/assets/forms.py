@@ -9,5 +9,5 @@ from wtforms import SelectMultipleField, widgets
 class AssetTypeForm(FlaskForm):
     name = field.StringField("Название вида ассетов", validators=[DataRequired()])
     description = field.StringField("Описание к виду ассетов", validators=[DataRequired()])
-    image = field.FileField(validators=[FileAllowed(['jpg', 'png'], "Картинка в jpg/png")])
+    image = field.FileField("Картинка в jpg/png", validators=[FileAllowed(['jpg', 'png'])])
     submit = field.SubmitField("Добавить")
