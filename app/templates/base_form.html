@@ -8,7 +8,8 @@
         {% block form_title %}Заголовок формы{% endblock %}
       </div>
       <div class="card-body">
-        <form method="POST" {% if action_url %} action="{{ action_url }}" {% endif %} novalidate>
+        <form method="POST" enctype="multipart/form-data"
+              {% if action_url %} action="{{ action_url }}" {% endif %} novalidate>
           {{ form.hidden_tag() }}
           {% block form_content %}
           {% for field in form if field.widget.input_type != 'hidden' %}
