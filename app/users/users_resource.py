@@ -9,10 +9,12 @@ from flask_login import current_user, login_user
 from app import db
 
 
-def abort_if_user_not_found(user_id):
-    users = User.query.filter_by(id=user_id).first()
-    if not users:
+def user_or_404(user_id):
+    user = User.query.get(user_id)
+    if not user:
         abort(404, message=F"User {user_id} not found")
+    else:
+        return user_to_dict(user)
 
 
 def abort_if_no_access():
@@ -37,14 +39,12 @@ def user_to_dict(user):
 class UsersResource(Resource):
     def get(self, user_id):
         abort_if_no_access()
-        abort_if_user_not_found(user_id)
-        user = user_to_dict(User.query.get(user_id))
+        user = user_or_404(user_id)
         return jsonify({"users": user})
 
     def delete(self, user_id):
         abort_if_no_access()
-        abort_if_user_not_found(user_id)
-        user = User.query.get(user_id)
+        user = user_or_404(user_id)
 
         users_roles.delete().where(users_roles.c.user_id == user_id)
 
@@ -54,7 +54,7 @@ class UsersResource(Resource):
 
     def put(self, user_id):
         abort_if_no_access()
-        abort_if_user_not_found(user_id)
+        user = user_or_404(user_id)
         args = unrequired_parser.parser.parse_args()
 
         new_user_data = {}
@@ -62,7 +62,6 @@ class UsersResource(Resource):
             if value is not None:
                 new_user_data[key] = value
 
-        user = User.query.get(user_id)
         user.name = new_user_data.get("name", user.name)
         user.phone = new_user_data.get("phone", user.phone)
 
