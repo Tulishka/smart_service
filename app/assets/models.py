@@ -41,27 +41,17 @@ class Asset(db.Model):
     tickets = db.relationship("Ticket", back_populates="asset")
 
 
-class AssetOption(db.Model):
-    __tablename__ = "asset_options"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    title = Column(String(mc.TITLE_LEN), nullable=False)
-    description = Column(String(mc.DESCR_LEN))
-    style = Column(String(mc.NAME_LEN))
-    department_id = Column(Integer, ForeignKey("departments.id", ondelete="SET NULL"), nullable=True)
-
-    department = db.relationship("Department")
-    types = db.relationship("AssetTypeOption", back_populates="asset_option")
-
-
 class AssetTypeOption(db.Model):
     __tablename__ = "asset_type_options"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     asset_type_id = Column(Integer, ForeignKey("asset_types.id", ondelete="CASCADE"), nullable=False)
-    asset_option_id = Column(Integer, ForeignKey("asset_options.id", ondelete="CASCADE"), nullable=False)
+    title = Column(String(mc.TITLE_LEN), nullable=False)
+    description = Column(String(mc.DESCR_LEN), nullable=True)
+    style = Column(String(mc.NAME_LEN))
+    department_id = Column(Integer, ForeignKey("departments.id", ondelete="SET NULL"), nullable=True)
     order = Column(Integer, nullable=False)
     group = Column(Integer)
 
     asset_type = db.relationship("AssetType", back_populates="options")
-    asset_option = db.relationship("AssetOption", back_populates="types")
+    department = db.relationship("Department", back_populates="asset_type_options")
