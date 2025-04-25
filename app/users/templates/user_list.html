@@ -18,7 +18,7 @@
   <tr onclick="location='{{ url_for('users.edit', user=user.id) }}'">
     <th scope="row">{{ loop.index }}</th>
     <td>{{ user.name }}</td>
-    <td>{{ user.department }}</td>
+    <td>{{ user.department.name }}</td>
     <td>{{ user.role_names() }}</td>
     <td>{{ user.phone }}</td>
     <td>{{ user.status.value }}</td>

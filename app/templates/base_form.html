@@ -2,13 +2,14 @@
 
 {% block content %}
 <div class="row justify-content-center">
-  <div class="col-md-6 col-lg-4">
+  <div class="col-md-10 col-lg-6">
     <div class="card m-4">
       <div class="card-header">
         {% block form_title %}Заголовок формы{% endblock %}
       </div>
       <div class="card-body">
-        <form method="POST" {% if action_url %} action="{{ action_url }}" {% endif %} novalidate>
+        <form method="POST" enctype="multipart/form-data"
+              {% if action_url %} action="{{ action_url }}" {% endif %} novalidate>
           {{ form.hidden_tag() }}
           {% block form_content %}
           {% for field in form if field.widget.input_type != 'hidden' %}

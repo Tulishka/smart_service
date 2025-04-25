@@ -35,12 +35,14 @@ class Ticket(db.Model):
     take_time = Column(DateTime)
     closed = Column(DateTime)
     result = Column(Enum(TicketResults))
+    option_id = Column(Integer, ForeignKey('asset_type_options.id'))
 
     asset = db.relationship("Asset", back_populates="tickets")
     creator = db.relationship("User", back_populates="created_tickets", foreign_keys=[creator_id])
     assignee = db.relationship("User", back_populates="assigned_tickets", foreign_keys=[assignee_id])
     department = db.relationship("Department", back_populates="tickets")
     comments = db.relationship("TicketComment", back_populates="ticket")
+    option = db.relationship("AssetTypeOption")
 
 
 class TicketComment(db.Model):

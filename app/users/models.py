@@ -54,7 +54,7 @@ class Department(db.Model):
     name = Column(String(mc.NAME_LEN), nullable=False, unique=True)
 
     users = db.relationship("User", back_populates="department")
-    asset_options = db.relationship("AssetOption", back_populates="department")
+    asset_type_options = db.relationship("AssetTypeOption", back_populates="department")
     tickets = db.relationship("Ticket", back_populates="department")
 
 
