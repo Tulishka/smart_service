@@ -12,7 +12,6 @@ def index():
 @bp.route("/types")
 def types():
     data = AssetType.query.all()
-    print(data[0].image)
     return render_template("types_list.html", data=data)
 
 
