@@ -51,7 +51,7 @@ def edit_type(type_id=0):
                 db.session.add(asset_type)
                 db.session.commit()
 
-                flash(f"Вид асетов {asset_type.name} успешно добавлен", category="info")
+                flash(f"Вид асета {asset_type.name} успешно сохранён", category="info")
                 return redirect(url_for("assets.types"))
 
     return render_template("asset_type_form.html", form=form)
