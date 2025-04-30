@@ -1,22 +1,26 @@
 {% extends "base_form.html" %}
 
 {% block form_title %}
-Добавление вида асета
+{% if form.name.data %}Редактирование{% else %}Добавление{% endif %} вида асета
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 {% endblock %}
 
 {% block form_content %}
 
-<div class="card">
+<div class="card mb-3">
   {% if form.image.data %}
   <img src="{{ url_for('static', filename='assets/uploads/' + form.image.data) }}" class="card-img-top"
-       alt="asset type image">
+       style="max-height: 300px; object-fit: cover;" alt="asset type image">
   {% else %}
   <img src="{{ url_for('static', filename='img/assets_default_image.png') }}" class="card-img-top"
-       alt="asset type image">
+       style="max-height: 300px; object-fit: cover;" alt="asset type image">
   {% endif %}
 </div>
-<!--  <img src="{{ form.image.value }}" style="width:100px">-->
-<div class="form-group mb-3 mt-2">
+<div class="form-group mb-3">
   {{ form.image.label }}
   {{ form.image(class="form-control") }}
   {% for error in form.image.errors %}
@@ -34,53 +38,191 @@
 
 <div class="form-group mb-3">
   {{ form.description.label }}
-  {{ form.description(class="form-control",rows="3") }}
+  {{ form.description(class="form-control", rows="3") }}
   {% for error in form.description.errors %}
   <span class="text-danger">{{ error }}</span>
   {% endfor %}
 </div>
 
-<h5>Опции сервиса</h5>
-<div class="accordion" id="accordionExample">
-  <div class="accordion-item">
-    <h2 class="accordion-header">
-      <button class="accordion-button bg-light" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne"
-              aria-expanded="true" aria-controls="collapseOne">
-        Опция 1
-      </button>
-    </h2>
-    <div id="collapseOne" class="accordion-collapse collapse show" data-bs-parent="#accordionExample">
-      <div class="accordion-body">
-        Описание опции
-        <div class="mt-3 text-end">
-          <button class="btn btn-danger ">Удалить</button>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="accordion-item">
-    <h2 class="accordion-header">
-      <button class="accordion-button collapsed bg-light" type="button" data-bs-toggle="collapse"
-              data-bs-target="#collapseTwo"
-              aria-expanded="false" aria-controls="collapseTwo">
-        Опция 2
-      </button>
-    </h2>
-    <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#accordionExample">
-      <div class="accordion-body">
-        Описание опции
-      </div>
-    </div>
-  </div>
+<h5 class="mt-4">Опции сервиса</h5>
+<div class="accordion mb-3" id="optionsAccordion"></div>
+<div class="mb-3 text-end">
+  <button type="button" class="btn btn-primary" id="addNewOption">Добавить опцию</button>
 </div>
-
-
-<div class="mt-3 text-end">
-  <button class="btn btn-light">добавить опцию</button>
-</div>
-
-
+<input type="hidden" id="optionsData" name="options_data" value="">
 <div class="form-group">
   {{ form.submit(class="btn btn-primary btn-dark") }}
 </div>
+<div class="modal fade" id="optionModal" tabindex="-1" aria-labelledby="optionModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="optionModalLabel">Добавить опцию</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div id="optionForm">
+          <input type="hidden" id="optionId" value="">
+          <div class="mb-3">
+            <label for="optionTitle" class="form-label">Название опции</label>
+            <input type="text" class="form-control reset" id="optionTitle" required>
+          </div>
+          <div class="mb-3">
+            <label for="optionDescription" class="form-label">Описание</label>
+            <textarea class="form-control reset" id="optionDescription" rows="3"></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="optionDepartment" class="form-label">Отдел</label>
+            <select class="form-select reset" id="optionDepartment">
+              <option value="">Не указан</option>
+              {% for department in departments %}
+              <option value="{{ department.id }}">{{ department.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+        <button type="button" class="btn btn-primary" id="saveOption">Сохранить</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  $(document).ready(function() {
+    let options = {{ options|tojson|safe }};
+    let departments = {{ departments|tojson|safe }};
+    let active_option_index = undefined;
+    let initialOptions = JSON.stringify(options); // Сохраняем начальное состояние
+    let formChanged = false; // Флаг изменений
+
+    // Отслеживаем изменения формы
+    $('form').on('input change', function() {
+      formChanged = true;
+    });
+
+    // Обработчик перед выходом со страницы
+    window.addEventListener('beforeunload', function(e) {
+      if (formChanged || JSON.stringify(options) !== initialOptions) {
+        e.preventDefault();
+        e.returnValue = 'У вас есть несохраненные изменения. Вы уверены, что хотите уйти?';
+        return e.returnValue;
+      }
+    });
+
+    function updateOptionsField() {
+      $('#optionsData').val(JSON.stringify(options));
+      // Отмечаем изменения при обновлении опций
+      if (JSON.stringify(options) !== initialOptions) {
+        formChanged = true;
+      }
+    }
+
+    $('#addNewOption').click(function (event) {
+      $('#optionModal .reset').val('');
+      $('#optionId').val('');
+      $('#optionModalLabel').text('Добавить опцию');
+      $('#optionModal').modal('show');
+      active_option_index = $('.accordion-button').length;
+    });
+
+    $('#saveOption').click(function() {
+      const optionId = $('#optionId').val();
+      const title = $('#optionTitle').val();
+      const description = $('#optionDescription').val();
+      const departmentId = $('#optionDepartment').val();
+
+      if (!title) {
+        alert('Название опции обязательно');
+        return;
+      }
+
+      const department = departments.find(d => d.id == departmentId);
+
+      const optionData = {
+        id: optionId || 'new-' + Date.now(),
+        title: title,
+        description: description,
+        department_id: departmentId,
+        department: department
+      };
+
+      if (optionId) {
+        const index = options.findIndex(o => o.id == optionId);
+        if (index !== -1) {
+          options[index] = optionData;
+        }
+      } else {
+        options.push(optionData);
+      }
+
+      renderOptions();
+      $('#optionModal').modal('hide');
+    });
+
+    $(document).on('click', '.edit-option', function() {
+      const optionId = $(this).data('option-id');
+      const option = options.find(o => o.id == optionId);
+      active_option_index = parseInt($(this).closest(".accordion-item").find(".accordion-button").attr("data-idx"));
+
+      if (option) {
+        $('#optionId').val(option.id);
+        $('#optionTitle').val(option.title);
+        $('#optionDescription').val(option.description);
+        $('#optionDepartment').val(option.department_id || '');
+        $('#optionModalLabel').text('Изменить опцию');
+        $('#optionModal').modal('show');
+      }
+    });
+
+    $(document).on('click', '.delete-option', function() {
+      if (confirm('Вы уверены, что хотите удалить эту опцию?')) {
+        const optionId = $(this).data('option-id');
+        options = options.filter(o => o.id != optionId);
+        renderOptions();
+      }
+    });
+
+    function renderOptions() {
+      const accordion = $('#optionsAccordion');
+      accordion.empty();
+
+      options.forEach((option, index) => {
+        const departmentName = option.department ? option.department.name : 'Не указан';
+
+        accordion.append(`
+          <div class="accordion-item" id="option-${option.id}">
+            <h2 class="accordion-header">
+              <button class="accordion-button bg-light ${index !== active_option_index ? 'collapsed' : ''}" data-idx="${index}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-${option.id}" aria-expanded="${index === 0}" aria-controls="collapse-${option.id}">
+                ${option.title}
+              </button>
+            </h2>
+            <div id="collapse-${option.id}" class="accordion-collapse collapse ${index === active_option_index ? 'show' : ''}" data-bs-parent="#optionsAccordion">
+              <div class="accordion-body">
+                <p>${option.description || ''}</p>
+                <p class="text-muted">Отдел: ${departmentName}</p>
+                <div class="d-flex justify-content-end gap-2">
+                  <button type="button" class="btn btn-sm btn-outline-primary edit-option" data-option-id="${option.id}">Изменить</button>
+                  <button type="button" class="btn btn-sm btn-outline-danger delete-option" data-option-id="${option.id}">Удалить</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        `);
+      });
+
+      updateOptionsField();
+    }
+
+    updateOptionsField();
+    renderOptions();
+
+    // Сбрасываем флаг изменений при отправке формы
+    $('form').on('submit', function() {
+      formChanged = false;
+      initialOptions = JSON.stringify(options);
+    });
+  });
+</script>
 {% endblock %}
