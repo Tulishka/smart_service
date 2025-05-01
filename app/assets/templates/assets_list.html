@@ -1,5 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h3>Асеты <a href="{{ url_for('assets.types') }}">Виды асетов</a></h3>
+<div class="container">
+  <ul class="nav nav-underline mb-3">
+    <li class="nav-item">
+      <a class="nav-link active disabled">Асеты</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{{ url_for('assets.types') }}">Виды асетов</a>
+    </li>
+  </ul>
+</div>
 {% endblock %}

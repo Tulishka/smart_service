@@ -1,33 +1,65 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h3>Виды асетов <a href="{{ url_for('assets.index') }}">Асеты</a></h3>
-<div>
-  <a href="{{ url_for('assets.edit_type', type_id=0) }}" type="button" class="btn btn-dark btn-lg">Добавить</a>
+
+
+<div class="container">
+
+  <ul class="nav nav-underline mb-3">
+    <li class="nav-item">
+      <a class="nav-link" href="{{ url_for('assets.index') }}">Асеты</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link active disabled" >Виды асетов</a>
+    </li>
+  </ul>
+
+  <div class="row">
+    <div class="col-md-3 mb-4">
+      <div class="card h-100 text-center" onclick="location.href='{{ url_for('assets.edit_type', type_id=0) }}'"
+           style="cursor: pointer;">
+        <div class="card-body d-flex flex-column justify-content-center align-items-center">
+          <h1 class="display-4">+</h1>
+          <h5 class="card-title">Добавить вид</h5>
+        </div>
+      </div>
+    </div>
+
+    {% for asset_type in data %}
+    <div class="col-md-3 mb-4">
+      <div class="card h-100" onclick="location.href='{{ url_for('assets.edit_type', type_id=asset_type.id) }}'"
+           style="cursor: pointer;">
+        {% if asset_type.image %}
+        <img class="card-img-top" src="{{ url_for('static', filename='/assets/uploads/' + asset_type.image) }}"
+             alt="{{ asset_type.name }}">
+        {% else %}
+        <img class="card-img-top" src="{{ url_for('static', filename='/img/assets_default_image.png') }}"
+             alt="{{ asset_type.name }}">
+        {% endif %}
+        <div class="card-body">
+          <h5 class="card-title">{{ asset_type.name }}</h5>
+          <p class="card-text text-muted small">
+            {{ asset_type.description[:100] }}{% if asset_type.description|length > 100 %}...{% endif %}
+          </p>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
 </div>
-<table class="table">
-  <thead>
-  <tr>
-    <th scope="col">#</th>
-    <th scope="col">Изображение</th>
-    <th scope="col">Название</th>
-    <th scope="col">Описание</th>
-  </tr>
-  </thead>
-  <tbody>
-  {% for asset_type in data %}
-  <tr onclick="location='{{ url_for('assets.edit_type', type_id=asset_type.id) }}'">
-    <th scope="row">{{ loop.index }}</th>
-    {% if asset_type.image %}
-      <td><img width="150" src="{{ url_for('static', filename='/assets/uploads/' + asset_type.image) }}"></td>
-    {% else %}
-      <td><img width="150" src="{{ url_for('static', filename='/img/assets_default_image.png') }}"></td>
-    {% endif %}
-    <td>{{ asset_type.name }}</td>
-    <td>{{ asset_type.description }}</td>
-  </tr>
-  {% endfor %}
-  </tbody>
-</table>
+
+<style>
+  .card {
+    transition: transform 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+  .card-img-top {
+    height: 150px;
+    object-fit: cover;
+  }
+</style>
 
 {% endblock %}
