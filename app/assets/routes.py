@@ -12,6 +12,7 @@ bp = Blueprint("assets", __name__, url_prefix="/assets", template_folder="templa
 os.makedirs("app/static/assets/uploads", exist_ok=True)
 os.makedirs("app/static/assets/qr", exist_ok=True)
 
+
 @bp.route("/")
 def index():
     return render_template("assets_list.html")
@@ -20,7 +21,7 @@ def index():
 @bp.route("/type/<int:type_id>", methods=["GET", "POST"])
 def edit_type(type_id=0):
     asset_type = db.session.query(AssetType).filter_by(id=type_id).one_or_none()
-    departments = [{"id":dep.id,"name":dep.name} for dep in Department.query.all()]
+    departments = [{"id": dep.id, "name": dep.name} for dep in Department.query.all()]
 
     if request.method == "GET":
         if asset_type:
@@ -110,12 +111,25 @@ def edit_type(type_id=0):
     return render_template(
         "asset_type_form.html",
         form=form,
+        type_id=type_id,
         options=options,
         departments=departments
     )
 
 
-@bp.route("/types")
+@bp.get("/types")
 def types():
     data = AssetType.query.all()
     return render_template("types_list.html", data=data)
+
+
+@bp.delete("/types/<int:type_id>")
+def delete_type(type_id: int):
+    atype = db.get_or_404(AssetType, type_id)
+    if len(atype.assets):
+        return "Нельзя удалить! Этот вид асета используется!", 400
+
+    db.session.delete(atype)
+    db.session.commit()
+
+    return "", 204
