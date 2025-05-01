@@ -10,5 +10,27 @@
       <a class="nav-link" href="{{ url_for('assets.types') }}">Виды асетов</a>
     </li>
   </ul>
+  <table class="table">
+    <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Адрес</th>
+      <th scope="col">Вид</th>
+      <th scope="col">Название</th>
+      <th scope="col">Статус</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for asset in assets %}
+    <tr onclick="location='{{ url_for('assets.edit', asset_id=asset.id) }}'">
+      <th scope="row">{{ loop.index }}</th>
+      <td>{{ asset.address }}</td>
+      <td>{{ asset.type.name }}</td>
+      <td>{{ asset.name }}</td>
+      <td>{{ asset.status.value }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
 </div>
 {% endblock %}
