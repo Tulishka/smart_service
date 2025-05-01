@@ -30,7 +30,7 @@ class Asset(db.Model):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(mc.NAME_LEN), nullable=False, unique=True)
-    type_id = Column(Integer, ForeignKey("asset_types.id"), nullable=False)
+    type_id = Column(Integer, ForeignKey("asset_types.id", ondelete="RESTRICT"), nullable=False)
     address = Column(String(mc.TITLE_LEN), nullable=False)
     uid = Column(Uuid(), nullable=False)
     image = Column(String(mc.URL_LEN))
