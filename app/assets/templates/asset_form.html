@@ -1,5 +1,5 @@
 {% extends "base_form.html" %}
 
 {% block form_title %}
-  Заголовок формы
+  {% if form.name.data %}Редактирование{% else %}Добавление асета{% endif %}
 {% endblock %}
