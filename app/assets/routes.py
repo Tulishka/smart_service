@@ -134,9 +134,10 @@ def delete_type(type_id: int):
 
 
 @bp.route("/<int:asset_id>", methods=["GET", "POST"])
-def edit(asset_id=0):
+def edit(asset_id=0, type_id=0):
     asset = Asset.query.filter_by(id=asset_id).one_or_none()
     types = AssetType.query.all()
+    type_id = type_id or request.args.get("type_id")
 
     if request.method == "GET":
         if asset:
@@ -149,7 +150,7 @@ def edit(asset_id=0):
                 details=asset.details,
             )
         else:
-            form = AssetForm()
+            form = AssetForm(type_id=type_id)
 
         form.type_id.choices = [(type.id, type.name) for type in types]
     else:
@@ -178,6 +179,9 @@ def edit(asset_id=0):
                 db.session.add(asset)
                 db.session.commit()
                 flash(f"Асет {asset.name} сохранён", category="info")
+
+                if type_id:
+                    return redirect(url_for("assets.types"))
                 return redirect(url_for("assets.index"))
 
     return render_template("asset_form.html", form=form)
