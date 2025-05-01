@@ -1,10 +1,13 @@
 import json
 import os
+import uuid
 
 from flask import Blueprint, render_template, request, flash, url_for, redirect
-from app.assets.models import AssetType, AssetTypeOption
-from app.assets.forms import AssetTypeForm
+
 from app import db
+from app.assets.forms import AssetTypeForm, AssetForm
+from app.assets.models import AssetType, AssetTypeOption, Asset, AssetStatus
+from app.core import utils
 from app.users.models import Department
 
 bp = Blueprint("assets", __name__, url_prefix="/assets", template_folder="templates")
@@ -15,7 +18,8 @@ os.makedirs("app/static/assets/qr", exist_ok=True)
 
 @bp.route("/")
 def index():
-    return render_template("assets_list.html")
+    assets = Asset.query.all()
+    return render_template("assets_list.html", assets=assets)
 
 
 @bp.route("/type/<int:type_id>", methods=["GET", "POST"])
@@ -52,13 +56,7 @@ def edit_type(type_id=0):
             if AssetType.query.filter((AssetType.name == form.name.data) & (AssetType.id != type_id)).first():
                 form.name.errors = ("название вида асета занято",)
             else:
-                file_binary = form.image.data.read()
-                if not file_binary:
-                    image_address = asset_type.image if asset_type else None
-                else:
-                    image_address = form.name.data.replace(".", "-") + ".png"
-                    with open("app/static/assets/uploads/" + image_address, "wb") as file:
-                        file.write(file_binary)
+                image_address = utils.save_upload_file("assets", form.image.data)
 
                 if not asset_type:
                     asset_type = AssetType()
@@ -133,3 +131,53 @@ def delete_type(type_id: int):
     db.session.commit()
 
     return "", 204
+
+
+@bp.route("/<int:asset_id>", methods=["GET", "POST"])
+def edit(asset_id=0):
+    asset = Asset.query.filter_by(id=asset_id).one_or_none()
+    types = AssetType.query.all()
+
+    if request.method == "GET":
+        if asset:
+            form = AssetForm(
+                name=asset.name,
+                type_id=asset.type_id,
+                address=asset.address,
+                image=asset.image,
+                status=asset.status.value,
+                details=asset.details,
+            )
+        else:
+            form = AssetForm()
+
+        form.type_id.choices = [(type.id, type.name) for type in types]
+    else:
+        form = AssetForm()
+        form.type_id.choices = [(type.id, type.name) for type in types]
+        if form.validate_on_submit():
+            if Asset.query.filter((Asset.name == form.name.data) & (Asset.id != asset_id)).first():
+                form.name.errors = ("название асета занято",)
+            else:
+                if not form.image.data:
+                    image_address = asset.image if asset else None
+                else:
+                    image_address = utils.save_upload_file("assets", form.image.data)
+
+                if not asset:
+                    asset = Asset()
+                    asset.uid = uuid.uuid4()
+
+                asset.name = form.name.data
+                asset.type_id = form.type_id.data
+                asset.address = form.address.data
+                asset.image = image_address
+                asset.status = AssetStatus(form.status.data)
+                asset.details = form.details.data
+
+                db.session.add(asset)
+                db.session.commit()
+                flash(f"Асет {asset.name} сохранён", category="info")
+                return redirect(url_for("assets.index"))
+
+    return render_template("asset_form.html", form=form)
