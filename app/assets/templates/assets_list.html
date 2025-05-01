@@ -1,6 +1,23 @@
 {% extends "base.html" %}
 
 {% block content %}
+<style>
+  #create-new-asset-btn {
+    font-weight: 600;
+    text-align: left;
+    padding-left: 16px;
+  }
+
+  #create-new-asset-btn {
+    background: #f3f3f3;
+  }
+
+  #create-new-asset-btn:hover {
+    background: #d3d3d3;
+  }
+
+</style>
+
 <div class="container">
   <ul class="nav nav-underline mb-3">
     <li class="nav-item">
@@ -21,9 +38,14 @@
     </tr>
     </thead>
     <tbody>
+    <tr onclick="location='{{ url_for('assets.edit', asset_id=0) }}'">
+      <td id="create-new-asset-btn" colspan="5">
+        + Добавить новый асет
+      </td>
+    </tr>
     {% for asset in assets %}
     <tr onclick="location='{{ url_for('assets.edit', asset_id=asset.id) }}'">
-      <th scope="row">{{ loop.index }}</th>
+      <td scope="row">{{ loop.index }}</td>
       <td>{{ asset.address }}</td>
       <td>{{ asset.type.name }}</td>
       <td>{{ asset.name }}</td>
