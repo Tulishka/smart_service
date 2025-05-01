@@ -1,9 +1,7 @@
-from flask_wtf import FlaskForm
-from flask_wtf.file import FileField, FileRequired, FileAllowed
 import wtforms.fields.simple as field
-import wtforms.fields.choices as choices
+from flask_wtf import FlaskForm
+from flask_wtf.file import FileAllowed
 from wtforms.validators import DataRequired
-from wtforms import SelectMultipleField, widgets
 
 
 class AssetTypeForm(FlaskForm):
