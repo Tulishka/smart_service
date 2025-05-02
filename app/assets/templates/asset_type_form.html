@@ -53,6 +53,14 @@
   {% endfor %}
 </div>
 
+<div class="form-group mb-3">
+  {{ form.qr_help_text.label }}
+  {{ form.qr_help_text(class="form-control", rows="3") }}
+  {% for error in form.qr_help_text.errors %}
+  <span class="text-danger">{{ error }}</span>
+  {% endfor %}
+</div>
+
 <h5 class="mt-4">Опции сервиса</h5>
 <div class="accordion mb-3" id="optionsAccordion"></div>
 <div class="mb-3 text-end">
