@@ -36,12 +36,10 @@ def codes():
             {"id": str(asset.id), "name": asset.name, "qr_help_text": asset.type.qr_help_text}
             for asset in assets
         ]
-        print(assets_data)
 
     except Exception as ex:
         error_message = F"Ошибка при получении QR-кодов: {type(ex)}. Проверьте корректность запроса."
         assets_data = []
-        print(type(ex))
 
     return render_template("codes_list.html", assets_data=assets_data, error_message=error_message)
 
