@@ -9,6 +9,8 @@ from app.assets.forms import AssetTypeForm, AssetForm
 from app.assets.models import AssetType, AssetTypeOption, Asset, AssetStatus
 from app.core import utils
 from app.users.models import Department
+from app.assets.qr import create_qr_if_need
+
 
 bp = Blueprint("assets", __name__, url_prefix="/assets", template_folder="templates")
 
@@ -20,6 +22,28 @@ os.makedirs("app/static/assets/qr", exist_ok=True)
 def index():
     assets = Asset.query.all()
     return render_template("assets_list.html", assets=assets)
+
+
+@bp.route("/codes")
+def codes():
+    error_message = ""
+    try:
+        args = request.args.to_dict()["assets"]
+        assets_ids = [int(i) for i in args.split(",")]
+
+        assets = db.session.query(Asset).filter(Asset.id.in_(assets_ids)).all()
+        assets_data = [
+            {"id": str(asset.id), "name": asset.name, "qr_help_text": asset.type.qr_help_text}
+            for asset in assets
+        ]
+        print(assets_data)
+
+    except Exception as ex:
+        error_message = F"Ошибка при получении QR-кодов: {type(ex)}. Проверьте корректность запроса."
+        assets_data = []
+        print(type(ex))
+
+    return render_template("codes_list.html", assets_data=assets_data, error_message=error_message)
 
 
 @bp.route("/type/<int:type_id>", methods=["GET", "POST"])
@@ -179,6 +203,7 @@ def edit(asset_id=0, type_id=0):
                 db.session.add(asset)
                 db.session.commit()
                 flash(f"Асет {asset.name} сохранён", category="info")
+                create_qr_if_need(asset.id)
 
                 if type_id:
                     return redirect(url_for("assets.types"))
