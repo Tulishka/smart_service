@@ -24,6 +24,28 @@ def index():
     return render_template("assets_list.html", assets=assets)
 
 
+@bp.route("/codes")
+def codes():
+    error_message = ""
+    try:
+        args = request.args.to_dict()["assets"]
+        assets_ids = [int(i) for i in args.split(",")]
+
+        assets = db.session.query(Asset).filter(Asset.id.in_(assets_ids)).all()
+        assets_data = [
+            {"id": str(asset.id), "name": asset.name, "qr_help_text": asset.type.qr_help_text}
+            for asset in assets
+        ]
+        print(assets_data)
+
+    except Exception as ex:
+        error_message = F"Ошибка при получении QR-кодов: {type(ex)}. Проверьте корректность запроса."
+        assets_data = []
+        print(type(ex))
+
+    return render_template("codes_list.html", assets_data=assets_data, error_message=error_message)
+
+
 @bp.route("/type/<int:type_id>", methods=["GET", "POST"])
 def edit_type(type_id=0):
     asset_type = db.session.query(AssetType).filter_by(id=type_id).one_or_none()
