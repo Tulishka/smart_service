@@ -38,3 +38,17 @@ tr:hover td, th {
 .form-check {
   margin-bottom: 5px;
 }
+
+#create-new-in-list-btn {
+  font-weight: 600;
+  text-align: left;
+  padding-left: 16px;
+}
+
+#create-new-in-list-btn {
+  background: #f3f3f3;
+}
+
+#create-new-in-list-btn:hover {
+  background: #d3d3d3;
+}

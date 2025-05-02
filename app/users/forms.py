@@ -16,3 +16,8 @@ class UserForm(FlaskForm):
                               option_widget=widgets.CheckboxInput(),
                               widget=widgets.ListWidget(prefix_label=False))
     submit = field.SubmitField("Сохранить")
+
+
+class DepartmentForm(FlaskForm):
+    name = field.StringField("Наименование", validators=[DataRequired()])
+    submit = field.SubmitField("Сохранить")

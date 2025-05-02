@@ -1,0 +1,37 @@
+{% extends "base_form.html" %}
+
+{% block form_title %}
+<div class="d-flex justify-content-between align-items-center">
+  <div>
+    {% if form.name.data %}Редактирование{% else %}Добавление отдела{% endif %}
+  </div>
+  {% if form.name.data %}
+  <div>
+    <button type="button" class="btn btn-sm btn-outline-danger" onclick="delete_department()">Удалить</button>
+  </div>
+  {% endif %}
+</div>
+<script>
+  function delete_department() {
+    if (confirm('Вы уверены, что хотите удалить этот отдел?')) {
+      fetch("{{ url_for('users.delete_department', department_id=department_id) }}", {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          window.location.href = "{{ url_for('users.department_list') }}";
+        } else {
+          response.text().then(text => alert('Ошибка при удалении отдела: '+text));
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Произошла ошибка при удалении');
+      });
+    }
+  }
+</script>
+{% endblock %}

@@ -1,7 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h3>Пользователи</h3>
+  <ul class="nav nav-underline mb-3">
+    <li class="nav-item">
+      <a class="nav-link active disabled">Пользователи</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{{ url_for('users.department_list') }}">Отделы</a>
+    </li>
+  </ul>
 <table class="table">
   <thead>
   <tr>
@@ -9,7 +16,6 @@
     <th scope="col">Имя</th>
     <th scope="col">Отдел</th>
     <th scope="col">Роли</th>
-    <th scope="col">Телефон</th>
     <th scope="col">Статус</th>
   </tr>
   </thead>
@@ -20,7 +26,6 @@
     <td>{{ user.name }}</td>
     <td>{{ user.department.name }}</td>
     <td>{{ user.role_names() }}</td>
-    <td>{{ user.phone }}</td>
     <td>{{ user.status.value }}</td>
   </tr>
   {% endfor %}

@@ -1,0 +1,41 @@
+<div class="cards">
+    {{ error_message }}
+    {% for asset in assets_data %}
+  <div class="card page">
+      <figure>
+          <figcaption>{{ asset.name }}</figcaption>
+          <img src="{{ url_for('static', filename='assets/qr/' + asset.id + '.png') }}" width="200" height="200">
+          <figcaption>{{ asset.qr_help_text }}</figcaption>
+      </figure>
+
+  </div>
+    {% endfor %}
+</div>
+
+
+<style>
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 225px);
+  width: 100%;
+  max-width: 1000px;
+  justify-content: center;
+  justify-items: center;
+  column-gap: 70px;
+  row-gap: 40px;
+  margin: 0 auto;
+}
+.card {
+    border: 2px solid #000000;
+     break-inside: avoid;
+}
+figcaption {
+    text-align: center;
+}
+@media print {
+    .page {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
+}
+</style>

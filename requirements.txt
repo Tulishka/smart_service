@@ -5,3 +5,6 @@ flask-restful
 Flask-SQLAlchemy
 python-dotenv
 requests
+qrcode
+pillow
+markupsafe

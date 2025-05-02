@@ -1,11 +1,10 @@
+from datetime import datetime
 from enum import Enum as PyEnum
 
 from sqlalchemy import Integer, String, Column, ForeignKey, Enum, DateTime
 
 from app.database import model_const as mc
 from app import db
-
-from sqlalchemy import Column
 
 
 class TicketStatus(PyEnum):
@@ -25,7 +24,7 @@ class Ticket(db.Model):
     __tablename__ = 'tickets'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    created = Column(DateTime, nullable=False)
+    created = Column(DateTime, default=datetime.now)
     asset_id = Column(Integer, ForeignKey('assets.id'), nullable=False)
     description = Column(String(mc.DESCR_LEN))
     creator_id = Column(Integer, ForeignKey('users.id'), nullable=False)
