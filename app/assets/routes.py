@@ -204,7 +204,7 @@ def edit(asset_id=0, type_id=0):
                 db.session.add(asset)
                 db.session.commit()
                 flash(f"Асет {asset.name} сохранён", category="info")
-                create_qr_if_need(asset.id)
+                create_qr_if_need(asset.uid)
 
                 if type_id:
                     return redirect(url_for("assets.types"))
