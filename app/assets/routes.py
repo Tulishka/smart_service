@@ -9,6 +9,8 @@ from app.assets.forms import AssetTypeForm, AssetForm
 from app.assets.models import AssetType, AssetTypeOption, Asset, AssetStatus
 from app.core import utils
 from app.users.models import Department
+from app.assets.qr import create_qr_if_need
+
 
 bp = Blueprint("assets", __name__, url_prefix="/assets", template_folder="templates")
 
@@ -179,6 +181,7 @@ def edit(asset_id=0, type_id=0):
                 db.session.add(asset)
                 db.session.commit()
                 flash(f"Асет {asset.name} сохранён", category="info")
+                create_qr_if_need(asset.id)
 
                 if type_id:
                     return redirect(url_for("assets.types"))
