@@ -1,6 +1,6 @@
 <div class="cards">
     {% for asset in assets_data %}
-  <div class="card">
+  <div class="card page">
       <figure>
           <figcaption>{{ asset.name }}</figcaption>
           <img src="{{ url_for('static', filename='assets/qr/' + asset.id + '.png') }}" width="200" height="200">
@@ -26,8 +26,15 @@
 }
 .card {
     border: 2px solid #000000;
+     break-inside: avoid;
 }
 figcaption {
     text-align: center;
+}
+@media print {
+    .page {
+        page-break-inside: avoid;
+        page-break-after: auto;
+    }
 }
 </style>
