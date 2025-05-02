@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block content %}
+<ul class="nav nav-underline mb-3">
+  <li class="nav-item">
+    <a class="nav-link" href="{{ url_for('users.user_list') }}">Пользователи</a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link active disabled">Отделы</a>
+  </li>
+</ul>
+<table class="table">
+  <thead>
+  <tr>
+    <th scope="col">#</th>
+    <th scope="col">Наименование</th>
+  </tr>
+  </thead>
+  <tbody>
+  <tr onclick="location='{{ url_for('users.department', department_id=0) }}'">
+    <td id="create-new-in-list-btn" colspan="5">
+      + Добавить новый отдел
+    </td>
+  </tr>
+  {% for department in departments %}
+  <tr onclick="location='{{ url_for('users.department', department_id=department.id) }}'">
+    <td scope="row">{{ loop.index }}</td>
+    <td>{{ department.name }}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}
