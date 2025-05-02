@@ -43,13 +43,13 @@
             {{ asset_type.description[:100] }}{% if asset_type.description|length > 100 %}...{% endif %}
           </p>
         </div>
-        <div class="dropdown type-menu-button" data-bs-toggle="dropdown" onclick="event.stopPropagation()">
+        <div class="dropdown type-menu-button" data-bs-toggle="dropdown" onclick="event.stopPropagation();close_other_menu(this)">
           <svg width="16" height="36" fill="none"
                xmlns="http://www.w3.org/2000/svg"
                style="margin-top: -8px;">
             <use href="#three-dots"/>
           </svg>
-          <ul class="dropdown-menu">
+          <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item" href="#" onclick="new_asset_click({{ asset_type.id }})">
               Создать новый асет</a>
             </li>
@@ -71,6 +71,18 @@
 </div>
 
 <script>
+
+  function close_other_menu(currentDropdown) {
+    var menus = document.querySelectorAll('.dropdown-menu.show');
+    menus.forEach(function(menu) {
+      if (!menu.isSameNode(currentDropdown.querySelector('.dropdown-menu'))) {
+        var dd = bootstrap.Dropdown.getInstance(menu.closest('.dropdown'));
+        if (dd) {
+          dd.hide();
+        }
+      }
+    });
+  }
 
   function new_asset_click(type_id) {
     event.stopPropagation();
