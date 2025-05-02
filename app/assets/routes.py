@@ -3,8 +3,10 @@ import os
 import uuid
 
 from flask import Blueprint, render_template, request, flash, url_for, redirect
+from markupsafe import Markup
 
 from app import db
+from app.config import Config
 from app.assets.forms import AssetTypeForm, AssetForm
 from app.assets.models import AssetType, AssetTypeOption, Asset, AssetStatus
 from app.core import utils
@@ -37,11 +39,21 @@ def codes():
             for asset in assets
         ]
 
+        if not assets_data:
+            error_message = F"По данным id ничего не найдено."
+
     except Exception as ex:
         error_message = F"Ошибка при получении QR-кодов: {type(ex)}. Проверьте корректность запроса."
         assets_data = []
 
     return render_template("codes_list.html", assets_data=assets_data, error_message=error_message)
+
+
+@bp.route("/codes_process", methods=["POST"])
+def codes_process():
+    selected_ids = ",".join(request.form.getlist('checkboxes'))
+    print(selected_ids)
+    return redirect(url_for("assets.codes", assets=selected_ids))
 
 
 @bp.route("/type/<int:type_id>", methods=["GET", "POST"])
@@ -200,8 +212,13 @@ def edit(asset_id=0, type_id=0):
 
                 db.session.add(asset)
                 db.session.commit()
-                flash(f"Асет {asset.name} сохранён", category="info")
-                create_qr_if_need(asset.id)
+                result = create_qr_if_need(asset.id)
+                if result:
+                    html_link = (F"<a href='{Config.APP_HOST}/assets/codes?assets={asset.id}' class='alert-link'>"
+                                 F"Перейти на страницу печати QR-кода.</a>")
+                else:
+                    html_link = ''
+                flash(Markup(f"Асет {asset.name} сохранён. {html_link}"), category="info")
 
                 if type_id:
                     return redirect(url_for("assets.types"))
