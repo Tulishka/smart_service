@@ -11,7 +11,6 @@ from app.core import utils
 from app.users.models import Department
 from app.assets.qr import create_qr_if_need
 
-
 bp = Blueprint("assets", __name__, url_prefix="/assets", template_folder="templates")
 
 os.makedirs("app/static/assets/uploads", exist_ok=True)
@@ -48,6 +47,7 @@ def codes():
 def edit_type(type_id=0):
     asset_type = db.session.query(AssetType).filter_by(id=type_id).one_or_none()
     departments = [{"id": dep.id, "name": dep.name} for dep in Department.query.all()]
+    options = []
 
     if request.method == "GET":
         if asset_type:
@@ -64,10 +64,10 @@ def edit_type(type_id=0):
             form = AssetTypeForm(
                 name=asset_type.name,
                 description=asset_type.description,
+                qr_help_text=asset_type.qr_help_text,
                 image=asset_type.image
             )
         else:
-            options = []
             form = AssetTypeForm()
     else:
         form = AssetTypeForm()
@@ -78,14 +78,17 @@ def edit_type(type_id=0):
             if AssetType.query.filter((AssetType.name == form.name.data) & (AssetType.id != type_id)).first():
                 form.name.errors = ("название вида асета занято",)
             else:
-                image_address = utils.save_upload_file("assets", form.image.data)
-
                 if not asset_type:
                     asset_type = AssetType()
 
+                if form.image.data:
+                    image_address = utils.save_upload_file("assets", form.image.data)
+                else:
+                    image_address = asset_type.image if asset_type else None
+
                 asset_type.name = form.name.data
                 asset_type.description = form.description.data
-                asset_type.qr_help_text = "qr_help_text"
+                asset_type.qr_help_text = form.qr_help_text.data
                 if image_address:
                     asset_type.image = image_address
 
@@ -182,14 +185,14 @@ def edit(asset_id=0, type_id=0):
             if Asset.query.filter((Asset.name == form.name.data) & (Asset.id != asset_id)).first():
                 form.name.errors = ("название асета занято",)
             else:
+                if not asset:
+                    asset = Asset()
+                    asset.uid = uuid.uuid4()
+
                 if not form.image.data:
                     image_address = asset.image if asset else None
                 else:
                     image_address = utils.save_upload_file("assets", form.image.data)
-
-                if not asset:
-                    asset = Asset()
-                    asset.uid = uuid.uuid4()
 
                 asset.name = form.name.data
                 asset.type_id = form.type_id.data

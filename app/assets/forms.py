@@ -13,6 +13,7 @@ class AssetTypeForm(FlaskForm):
     name = field.StringField("Название", validators=[DataRequired()])
     description = field.TextAreaField("Описание", validators=[DataRequired()])
     image = field.FileField("Картинка (jpg/png)", validators=[FileAllowed(['jpg', 'png'])])
+    qr_help_text = field.TextAreaField("Текст на QR", validators=[DataRequired(), Length(max=mc.TITLE_LEN)])
     submit = field.SubmitField("Сохранить")
 
 
