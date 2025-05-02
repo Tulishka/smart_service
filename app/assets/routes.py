@@ -52,7 +52,6 @@ def codes():
 @bp.route("/codes_process", methods=["POST"])
 def codes_process():
     selected_ids = ",".join(request.form.getlist('checkboxes'))
-    print(selected_ids)
     return redirect(url_for("assets.codes", assets=selected_ids))
 
 
