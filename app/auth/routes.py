@@ -23,7 +23,7 @@ def login():
         if not user or not user.check_password(form.password.data):
             flash("Неверный телефон или пароль", category="danger")
         else:
-            login_user(user)
+            login_user(user, remember=form.remember_me.data)
             flash("Успешный вход", category="success")
             return redirect(redirect_url)
 
@@ -50,7 +50,7 @@ def register():
             db.session.add(user)
             db.session.commit()
 
-            login_user(user)
+            login_user(user, remember=True)
             flash("Регистрация прошла успешно", category="success")
             return redirect(redirect_url)
 
