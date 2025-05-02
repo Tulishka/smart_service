@@ -2,7 +2,6 @@ import os
 import uuid
 
 basedir = os.path.abspath(os.path.dirname(__file__))
-APP_HOST = "http://127.0.0.1:5000"
 
 
 class Config(object):
@@ -14,6 +13,7 @@ class Config(object):
         f"sqlite:///{os.path.join(basedir, 'data', 'smart_service.db')}"
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    APP_HOST = "http://127.0.0.1:5000"
 
 
 class ProductionConfig(Config):
