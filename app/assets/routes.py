@@ -214,7 +214,8 @@ def edit(asset_id=0, type_id=0):
 
                 db.session.add(asset)
                 db.session.commit()
-                result = create_qr_if_need(asset.id)
+
+                result = create_qr_if_need(asset.uid)
                 if result:
                     html_link = (F"<a href='{Config.APP_HOST}/assets/codes?assets={asset.id}' class='alert-link'>"
                                  F"Перейти на страницу печати QR-кода.</a>")
