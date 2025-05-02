@@ -2,19 +2,7 @@
 
 {% block content %}
 <style>
-  #create-new-asset-btn {
-    font-weight: 600;
-    text-align: left;
-    padding-left: 16px;
-  }
 
-  #create-new-asset-btn {
-    background: #f3f3f3;
-  }
-
-  #create-new-asset-btn:hover {
-    background: #d3d3d3;
-  }
 
 </style>
 
@@ -39,7 +27,7 @@
     </thead>
     <tbody>
     <tr onclick="location='{{ url_for('assets.edit', asset_id=0) }}'">
-      <td id="create-new-asset-btn" colspan="5">
+      <td id="create-new-in-list-btn" colspan="5">
         + Добавить новый асет
       </td>
     </tr>
