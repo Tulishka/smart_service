@@ -10,7 +10,7 @@
       <a class="nav-link" href="{{ url_for('assets.index') }}">Асеты</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link active disabled" >Виды асетов</a>
+      <a class="nav-link active disabled">Виды асетов</a>
     </li>
   </ul>
 
@@ -18,7 +18,8 @@
     <div class="col-md-3 mb-4">
       <div class="card h-100 text-center" onclick="location.href='{{ url_for('assets.edit_type', type_id=0) }}'"
            style="cursor: pointer;">
-        <div class="card-body d-flex flex-column justify-content-center align-items-center">
+        <div class="card-body d-flex flex-column justify-content-center align-items-center"
+             style="background: #f3f3f3;border-radius: 5px;">
           <h1 class="display-4">+</h1>
           <h5 class="card-title">Добавить вид</h5>
         </div>
@@ -42,24 +43,117 @@
             {{ asset_type.description[:100] }}{% if asset_type.description|length > 100 %}...{% endif %}
           </p>
         </div>
+        <div class="dropdown type-menu-button" data-bs-toggle="dropdown" onclick="event.stopPropagation()">
+          <svg width="16" height="36" fill="none"
+               xmlns="http://www.w3.org/2000/svg"
+               style="margin-top: -8px;">
+            <use href="#three-dots"/>
+          </svg>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#" onclick="new_asset_click({{ asset_type.id }})">
+              Создать новый асет</a>
+            </li>
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+            <li>
+              <a class="dropdown-item text-danger" href="#" onclick="delete_asset_type({{ asset_type.id }})">
+                Удалить вид асета</a>
+            </li>
+          </ul>
+        </div>
+
+
       </div>
     </div>
     {% endfor %}
   </div>
 </div>
 
+<script>
+
+  function new_asset_click(type_id) {
+    event.stopPropagation();
+    window.location.href = "{{ url_for('assets.edit', asset_id=0, type_id=999999999) }}".replace('999999999',type_id);
+
+  };
+
+  function delete_asset_type(type_id) {
+    event.stopPropagation();
+
+    if (confirm('Вы уверены, что хотите удалить этот вид асета?')) {
+      fetch("{{ url_for('assets.delete_type', type_id=999999999) }}".replace('999999999',type_id), {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          window.location.href = "{{ url_for('assets.types') }}";
+        } else {
+          response.text().then(text => alert('Ошибка при удалении вида асета: '+text));
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Произошла ошибка при удалении');
+      });
+    }
+
+  }
+</script>
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none;">
+  <symbol id="three-dots" viewBox="0 0 16 16" style="color: white;" stroke="black" stroke-width="1">
+    <circle cx="8" cy="0" r="3" fill="currentColor"></circle>
+    <circle cx="8" cy="10" r="3" fill="currentColor"></circle>
+    <circle cx="8" cy="20" r="3" fill="currentColor"></circle>
+  </symbol>
+</svg>
+
 <style>
   .card {
     transition: transform 0.2s;
   }
   .card:hover {
-    transform: translateY(-5px);
+    transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
   }
   .card-img-top {
     height: 150px;
     object-fit: cover;
   }
+
+  .card-body {
+    background: #f9f9f9;
+    border-radius: 5px;
+    border-top: 1px solid #d5d2d2;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+
+  .type-menu-button {
+    user-select: none;
+    position: absolute;
+    right: 4px;
+    width: 36px;
+    height: 36px;
+    border-radius: 25px;
+    background: none;
+    text-align: center;
+    line-height: 36px;
+    top: 4px;
+    border: 0px solid #afafaf;
+    transition-duration: 300ms;
+  }
+
+  .type-menu-button:hover {
+    background: #ddd;
+    transform: scale(1);
+    border-color: #818181;
+  }
+
 </style>
 
 {% endblock %}
