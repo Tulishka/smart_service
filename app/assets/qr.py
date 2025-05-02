@@ -10,3 +10,4 @@ def create_qr_if_need(asset_uid):
     img_address = f'app/static/assets/qr/{asset_uid}.png'
     img = qrcode.make(web_address)
     img.save(img_address)
+    return True

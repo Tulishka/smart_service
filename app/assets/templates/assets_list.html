@@ -6,6 +6,7 @@
 
 </style>
 
+<form action="codes_process" method="POST">
 <div class="container">
   <ul class="nav nav-underline mb-3">
     <li class="nav-item">
@@ -23,11 +24,12 @@
       <th scope="col">Вид</th>
       <th scope="col">Название</th>
       <th scope="col">Статус</th>
+      <th scope="col">Печать</th>
     </tr>
     </thead>
     <tbody>
     <tr onclick="location='{{ url_for('assets.edit', asset_id=0) }}'">
-      <td id="create-new-in-list-btn" colspan="5">
+      <td id="create-new-in-list-btn" colspan="6">
         + Добавить новый асет
       </td>
     </tr>
@@ -38,9 +40,15 @@
       <td>{{ asset.type.name }}</td>
       <td>{{ asset.name }}</td>
       <td>{{ asset.status.value }}</td>
+      <td><input type="checkbox" name="checkboxes" onclick=event.stopPropagation() value="{{ asset.id }}"></td>
     </tr>
     {% endfor %}
     </tbody>
   </table>
+  <div class="d-grid gap-2">
+    <button class="btn btn-dark" type="submit">Печать QR-кодов</button>
+  </div>
+  <br>
 </div>
+</form>
 {% endblock %}
