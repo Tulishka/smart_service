@@ -4,7 +4,7 @@
   <div class="card page">
       <figure>
           <figcaption>{{ asset.name }}</figcaption>
-          <img src="{{ url_for('static', filename='assets/qr/' + asset.id + '.png') }}" width="200" height="200">
+          <img src="{{ url_for('static', filename='assets/qr/' + asset.uid + '.png') }}" width="200" height="200">
           <figcaption>{{ asset.qr_help_text }}</figcaption>
       </figure>
 
