@@ -34,7 +34,12 @@ def codes():
 
         assets = db.session.query(Asset).filter(Asset.id.in_(assets_ids)).all()
         assets_data = [
-            {"id": str(asset.id), "name": asset.name, "qr_help_text": asset.type.qr_help_text}
+            {
+                "id": str(asset.id),
+                "uid": str(asset.uid),
+                "name": asset.name,
+                "qr_help_text": asset.type.qr_help_text,
+            }
             for asset in assets
         ]
 
