@@ -1,21 +1,20 @@
 {% extends "base.html" %}
 
 {% block content %}
-<style>
-
-
-</style>
 
 <form action="codes_process" method="POST">
-<div class="container">
-  <ul class="nav nav-underline mb-3">
+  <div class="container">
+    <div class="d-flex justify-content-between mb-3">
+    <ul class="nav nav-underline">
     <li class="nav-item">
       <a class="nav-link active disabled">Асеты</a>
     </li>
     <li class="nav-item">
       <a class="nav-link" href="{{ url_for('assets.types') }}">Виды асетов</a>
     </li>
-  </ul>
+    </ul>
+    <button id="print_qr_codes" class="btn btn-sm btn-secondary sticky d-none" type="submit">Печать QR</button>
+  </div>
   <table class="table">
     <thead>
     <tr>
@@ -24,7 +23,7 @@
       <th scope="col">Вид</th>
       <th scope="col">Название</th>
       <th scope="col">Статус</th>
-      <th scope="col">Печать</th>
+      <th scope="col" class="text-center">Выбор</th>
     </tr>
     </thead>
     <tbody>
@@ -35,20 +34,24 @@
     </tr>
     {% for asset in assets %}
     <tr onclick="location='{{ url_for('assets.edit', asset_id=asset.id) }}'">
-      <td scope="row">{{ loop.index }}</td>
+      <td >{{ loop.index }}</td>
       <td>{{ asset.address }}</td>
       <td>{{ asset.type.name }}</td>
       <td>{{ asset.name }}</td>
       <td>{{ asset.status.value }}</td>
-      <td><input type="checkbox" name="checkboxes" onclick=event.stopPropagation() value="{{ asset.id }}"></td>
+      <td class="text-center" onclick="event.stopPropagation()" onchange="print_checkbox_change()"><input type="checkbox" name="checkboxes" value="{{ asset.id }}"></td>
     </tr>
     {% endfor %}
     </tbody>
   </table>
-  <div class="d-grid gap-2">
-    <button class="btn btn-dark" type="submit">Печать QR-кодов</button>
-  </div>
-  <br>
 </div>
 </form>
+    <script>
+        function print_checkbox_change() {
+            let checked = Array.from(document.querySelectorAll('input[name=checkboxes]').values())
+                .filter(x=>x.checked).map(x=>x.value);
+            const button = document.getElementById('print_qr_codes');
+            button.classList.toggle('d-none',checked.length===0);
+        }
+    </script>
 {% endblock %}
