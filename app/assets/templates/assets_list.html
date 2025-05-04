@@ -36,8 +36,8 @@
     <tr onclick="location='{{ url_for('assets.edit', asset_id=asset.id) }}'">
       <td >{{ loop.index }}</td>
       <td>{{ asset.address }}</td>
-      <td>{{ asset.type.name }}</td>
-      <td>{{ asset.name }}</td>
+      <td>{{ asset.type }}</td>
+      <td>{{ asset }}</td>
       <td>{{ asset.status.value }}</td>
       <td class="text-center" onclick="event.stopPropagation()" onchange="print_checkbox_change()"><input type="checkbox" name="checkboxes" value="{{ asset.id }}"></td>
     </tr>

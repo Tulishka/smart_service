@@ -93,7 +93,7 @@
             <select class="form-select reset" id="optionDepartment">
               <option value="">Не указан</option>
               {% for department in departments %}
-              <option value="{{ department.id }}">{{ department.name }}</option>
+              <option value="{{ department.id }}">{{ department }}</option>
               {% endfor %}
             </select>
           </div>

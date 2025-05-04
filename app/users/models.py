@@ -46,6 +46,9 @@ class User(db.Model, UserModelMix):
     def role_names(self):
         return ", ".join(role.name for role in self.roles)
 
+    def __str__(self):
+        return f"{self.name}"
+
 
 class Department(db.Model):
     __tablename__ = "departments"
@@ -57,12 +60,18 @@ class Department(db.Model):
     asset_type_options = db.relationship("AssetTypeOption", back_populates="department")
     tickets = db.relationship("Ticket", back_populates="department")
 
+    def __str__(self):
+        return f"{self.name}"
+
 
 class Role(db.Model):
     __tablename__ = "roles"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(mc.NAME_LEN), unique=True, nullable=False)
+
+    def __str__(self):
+        return f"{self.name}"
 
 
 users_roles = db.Table(
