@@ -7,6 +7,7 @@ __pycache__/
 *.so
 
 static/assets/
+app/data/
 
 # Distribution / packaging
 .Python
