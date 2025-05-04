@@ -1,10 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-<style>
-
-
-</style>
 
 <form action="codes_process" method="POST">
 <div class="container">
@@ -16,14 +12,28 @@
       <a class="nav-link" href="{{ url_for('assets.types') }}">Виды асетов</a>
     </li>
   </ul>
-  <table class="table">
+  <table id="data" class="table">
     <thead>
     <tr>
       <th scope="col">#</th>
       <th scope="col">Адрес</th>
-      <th scope="col">Вид</th>
+      <th scope="col">Вид
+        <select id="types">
+          <option selected name="all">ВСЕ ВИДЫ</option>
+          {% for type in types %}
+            <option name="{{ type }}">{{ type }}</option>
+          {% endfor %}
+        </select>
+      </th>
       <th scope="col">Название</th>
-      <th scope="col">Статус</th>
+      <th scope="col">Статус
+        <select id="status">
+          <option selected name="all">ЛЮБОЙ СТАТУС</option>
+          <option name="ДОСТУПНО">ДОСТУПНО</option>
+          <option name="НЕ ДОСТУПНО">НЕ ДОСТУПНО</option>
+          <option name="НА ОБСЛУЖИВАНИИ">НА ОБСЛУЖИВАНИИ</option>
+        </select>
+      </th>
       <th scope="col">Печать</th>
     </tr>
     </thead>
