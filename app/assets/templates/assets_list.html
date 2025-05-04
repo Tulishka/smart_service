@@ -19,19 +19,19 @@
       <th scope="col">Адрес</th>
       <th scope="col">Вид
         <select id="types">
-          <option selected name="all">ВСЕ ВИДЫ</option>
+          <option value="all" selected>ВСЕ ВИДЫ</option>
           {% for type in types %}
-            <option name="{{ type }}">{{ type }}</option>
+            <option value="{{ type }}">{{ type }}</option>
           {% endfor %}
         </select>
       </th>
       <th scope="col">Название</th>
       <th scope="col">Статус
         <select id="status">
-          <option selected name="all">ЛЮБОЙ СТАТУС</option>
-          <option name="ДОСТУПНО">ДОСТУПНО</option>
-          <option name="НЕ ДОСТУПНО">НЕ ДОСТУПНО</option>
-          <option name="НА ОБСЛУЖИВАНИИ">НА ОБСЛУЖИВАНИИ</option>
+          <option value="all" selected>ЛЮБОЙ СТАТУС</option>
+          <option value="ДОСТУПНО">ДОСТУПНО</option>
+          <option value="НЕ ДОСТУПНО">НЕ ДОСТУПНО</option>
+          <option value="НА ОБСЛУЖИВАНИИ">НА ОБСЛУЖИВАНИИ</option>
         </select>
       </th>
       <th scope="col">Печать</th>
@@ -44,7 +44,7 @@
       </td>
     </tr>
     {% for asset in assets %}
-    <tr onclick="location='{{ url_for('assets.edit', asset_id=asset.id) }}'">
+    <tr class="asset-row" data-type="{{ asset.type.name }}" data-status="{{ asset.status.value }}" onclick="location='{{ url_for('assets.edit', asset_id=asset.id) }}'">
       <td scope="row">{{ loop.index }}</td>
       <td>{{ asset.address }}</td>
       <td>{{ asset.type.name }}</td>
@@ -61,4 +61,35 @@
   <br>
 </div>
 </form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const typesSelect = document.getElementById('types');
+  const statusSelect = document.getElementById('status');
+  const rows = document.querySelectorAll('.asset-row');
+
+  function filterRows() {
+    const selectedType = typesSelect.value;
+    const selectedStatus = statusSelect.value;
+
+    rows.forEach(row => {
+      const rowType = row.getAttribute('data-type');
+      const rowStatus = row.getAttribute('data-status');
+
+      const typeMatch = selectedType === 'all' || rowType === selectedType;
+      const statusMatch = selectedStatus === 'all' || rowStatus === selectedStatus;
+
+      if (typeMatch && statusMatch) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+
+  typesSelect.addEventListener('change', filterRows);
+  statusSelect.addEventListener('change', filterRows);
+});
+</script>
+
 {% endblock %}
