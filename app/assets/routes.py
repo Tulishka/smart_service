@@ -22,7 +22,8 @@ os.makedirs("app/static/assets/qr", exist_ok=True)
 @bp.route("/")
 def index():
     assets = Asset.query.all()
-    return render_template("assets_list.html", assets=assets)
+    types = [type_.name for type_ in AssetType.query.all()]
+    return render_template("assets_list.html", assets=assets, types=types)
 
 
 @bp.route("/codes")

@@ -15,14 +15,28 @@
     </ul>
     <button id="print_qr_codes" class="btn btn-sm btn-secondary sticky d-none" type="submit">Печать QR</button>
   </div>
-  <table class="table">
+  <table id="data" class="table">
     <thead>
     <tr>
       <th scope="col">#</th>
       <th scope="col">Адрес</th>
-      <th scope="col">Вид</th>
+      <th scope="col">Вид
+        <select id="types">
+          <option value="all" selected>ВСЕ ВИДЫ</option>
+          {% for type in types %}
+            <option value="{{ type }}">{{ type }}</option>
+          {% endfor %}
+        </select>
+      </th>
       <th scope="col">Название</th>
-      <th scope="col">Статус</th>
+      <th scope="col">Статус
+        <select id="status">
+          <option value="all" selected>ЛЮБОЙ СТАТУС</option>
+          <option value="ДОСТУПНО">ДОСТУПНО</option>
+          <option value="НЕ ДОСТУПНО">НЕ ДОСТУПНО</option>
+          <option value="НА ОБСЛУЖИВАНИИ">НА ОБСЛУЖИВАНИИ</option>
+        </select>
+      </th>
       <th scope="col" class="text-center">Выбор</th>
     </tr>
     </thead>
@@ -33,8 +47,8 @@
       </td>
     </tr>
     {% for asset in assets %}
-    <tr onclick="location='{{ url_for('assets.edit', asset_id=asset.id) }}'">
-      <td >{{ loop.index }}</td>
+    <tr class="asset-row" data-type="{{ asset.type.name }}" data-status="{{ asset.status.value }}" onclick="location='{{ url_for('assets.edit', asset_id=asset.id) }}'">
+      <td scope="row">{{ loop.index }}</td>
       <td>{{ asset.address }}</td>
       <td>{{ asset.type }}</td>
       <td>{{ asset }}</td>
@@ -46,12 +60,44 @@
   </table>
 </div>
 </form>
-    <script>
+
+  <script>
         function print_checkbox_change() {
             let checked = Array.from(document.querySelectorAll('input[name=checkboxes]').values())
                 .filter(x=>x.checked).map(x=>x.value);
             const button = document.getElementById('print_qr_codes');
             button.classList.toggle('d-none',checked.length===0);
         }
-    </script>
+  </script>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const typesSelect = document.getElementById('types');
+    const statusSelect = document.getElementById('status');
+    const rows = document.querySelectorAll('.asset-row');
+
+    function filterRows() {
+      const selectedType = typesSelect.value;
+      const selectedStatus = statusSelect.value;
+
+      rows.forEach(row => {
+        const rowType = row.getAttribute('data-type');
+        const rowStatus = row.getAttribute('data-status');
+
+        const typeMatch = selectedType === 'all' || rowType === selectedType;
+        const statusMatch = selectedStatus === 'all' || rowStatus === selectedStatus;
+
+        if (typeMatch && statusMatch) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+
+    typesSelect.addEventListener('change', filterRows);
+    statusSelect.addEventListener('change', filterRows);
+  });
+  </script>
+
 {% endblock %}
