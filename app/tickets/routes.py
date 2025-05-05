@@ -47,12 +47,15 @@ def asset_detail(asset_uid):
 
     if form.validate_on_submit():
         selected_option_id = form.option.data
+        option = AssetTypeOption.query.filter_by(id=selected_option_id).one_or_none()
+        dep_id = option.department_id if option else None
         ticket = Ticket(
             asset_id=asset.id,
             creator_id=current_user.id,
             status=TicketStatus.OPENED,
             result=TicketResults.NEW,
             option_id=selected_option_id,
+            department_id=dep_id
         )
         db.session.add(ticket)
         db.session.commit()

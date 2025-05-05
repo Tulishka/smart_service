@@ -32,13 +32,13 @@
            style="cursor: pointer;">
         {% if asset_type.image %}
         <img class="card-img-top" src="{{ url_for('static', filename='/assets/uploads/' + asset_type.image) }}"
-             alt="{{ asset_type.name }}">
+             alt="{{ asset_type }}">
         {% else %}
         <img class="card-img-top" src="{{ url_for('static', filename='/img/assets_default_image.png') }}"
-             alt="{{ asset_type.name }}">
+             alt="{{ asset_type }}">
         {% endif %}
         <div class="card-body">
-          <h5 class="card-title">{{ asset_type.name }}</h5>
+          <h5 class="card-title">{{ asset_type }}</h5>
           <p class="card-text text-muted small">
             {{ asset_type.description[:100] }}{% if asset_type.description|length > 100 %}...{% endif %}
           </p>

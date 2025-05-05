@@ -25,7 +25,7 @@
   {% for department in departments %}
   <tr onclick="location='{{ url_for('users.department', department_id=department.id) }}'">
     <td scope="row">{{ loop.index }}</td>
-    <td>{{ department.name }}</td>
+    <td>{{ department }}</td>
   </tr>
   {% endfor %}
   </tbody>

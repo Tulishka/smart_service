@@ -18,10 +18,10 @@
   {% for ticket in tickets %}
   <tr onclick="location='{{ url_for('tickets.edit', ticket=ticket.id) }}'">
     <th scope="row">{{ loop.index }}</th>
-    <td>{{ ticket.created }}</td>
+    <td>{{ ticket.created.strftime('%d.%m.%Y %H:%M') }}</td>
     <td>{{ ticket.asset }}</td>
-    <td>{{ ticket.department }}</td>
-    <td>{{ ticket.assignee }}</td>
+    <td>{{ ticket.department or "не назначен" }}</td>
+    <td>{{ ticket.assignee or "не назначен" }}</td>
     <td>{{ ticket.status.value }}</td>
     <td>{{ ticket.result.value }}</td>
   </tr>

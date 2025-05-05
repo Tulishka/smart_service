@@ -5,7 +5,7 @@
   <div class="card mb-3">
     <div class="card-body">
       <div style="display: flex; align-items: center; justify-content: space-between;">
-        <h2>{{ asset.name }}</h2>
+        <h2>{{ asset }}</h2>
         <span class="badge p-2
                 {% if asset.status.value == 'ДОСТУПНО' %}bg-success
                 {% elif asset.status.value == 'НЕ ДОСТУПНО' %}bg-danger
@@ -19,7 +19,7 @@
                   align-items: baseline;
                   justify-content: space-between;
                   margin: 8px 0;">
-        <h5 class="text-secondary">{{ asset.type.name }}</h5>
+        <h5 class="text-secondary">{{ asset.type }}</h5>
         <div class="text-secondary">{{ asset.address }}</div>
       </div>
 
