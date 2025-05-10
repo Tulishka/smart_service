@@ -1,6 +1,6 @@
 services:
 
-  smart-service:
+  web:
     build: .
     ports:
       - "5000:5000"
@@ -21,6 +21,9 @@ services:
 
   certbot:
     image: certbot/certbot
+    ports:
+      - "80:80"
     volumes:
       - ./nginx/ssl:/etc/letsencrypt
-    command: certonly -d smart-dep.ru -d www.smart-dep.ru --email smartservice@mail.ru --agree-tos --non-interactive
+      - /var/www/html:/var/www/html
+    command: certonly --standalone -d smart-dep.ru -d www.smart-dep.ru --email smartservice@mail.ru --agree-tos --non-interactive
