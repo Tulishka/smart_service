@@ -24,10 +24,10 @@
       </div>
 
       {% if asset.image %}
-      <img src="{{ url_for('static', filename='assets/uploads/'+asset.image) }}" class="img-fluid rounded"
+      <img src="{{ url_for('main.media_files', filename='uploads/'+asset.image) }}" class="img-fluid rounded"
            alt="Изображение асета" style="max-height: 300px;">
       {% elif asset.type.image %}
-      <img src="{{ url_for('static', filename='assets/uploads/'+asset.type.image) }}" class="img-fluid rounded"
+      <img src="{{ url_for('main.media_files', filename='uploads/'+asset.type.image) }}" class="img-fluid rounded"
            alt="Изображение вида асета"
            style="max-height: 300px;">
       {% else %}

@@ -4,10 +4,10 @@ import os
 
 
 def create_qr_if_need(asset_uid):
-    if str(asset_uid) in [i.split(".")[0] for i in os.listdir("app/static/assets/qr")]:
+    if os.path.exists(f"{Config.MEDIA_FOLDER}/qr"):
         return
     web_address = f'{Config.APP_HOST}/tickets/new/{asset_uid}'
-    img_address = f'app/static/assets/qr/{asset_uid}.png'
+    img_address = f'app/{Config.MEDIA_FOLDER}/qr/{asset_uid}.png'
     img = qrcode.make(web_address)
     img.save(img_address)
     return True

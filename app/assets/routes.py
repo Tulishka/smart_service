@@ -15,8 +15,8 @@ from app.assets.qr import create_qr_if_need
 
 bp = Blueprint("assets", __name__, url_prefix="/assets", template_folder="templates")
 
-os.makedirs("app/static/assets/uploads", exist_ok=True)
-os.makedirs("app/static/assets/qr", exist_ok=True)
+os.makedirs(f"app/{Config.MEDIA_FOLDER}/uploads", exist_ok=True)
+os.makedirs(f"app/{Config.MEDIA_FOLDER}/qr", exist_ok=True)
 
 
 @bp.route("/")
@@ -99,7 +99,7 @@ def edit_type(type_id=0):
                     asset_type = AssetType()
 
                 if form.image.data:
-                    image_address = utils.save_upload_file("assets", form.image.data)
+                    image_address = utils.save_upload_file(form.image.data)
                 else:
                     image_address = asset_type.image if asset_type else None
 
@@ -209,8 +209,9 @@ def edit(asset_id=0, type_id=0):
                 if not form.image.data:
                     image_address = asset.image if asset else None
                 else:
-                    image_address = utils.save_upload_file("assets", form.image.data)
+                    image_address = utils.save_upload_file(form.image.data)
 
+                form.image.data = image_address
                 asset.name = form.name.data
                 asset.type_id = form.type_id.data
                 asset.address = form.address.data
