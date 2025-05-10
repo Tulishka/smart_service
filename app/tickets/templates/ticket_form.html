@@ -6,12 +6,14 @@
     <div class="card-body">
       <div style="display: flex; align-items: center; justify-content: space-between;">
         <h2>{{ asset }}</h2>
+        <a href="{{ url_for('assets.edit', asset_id=asset.id) }}">
         <span class="badge p-2
                 {% if asset.status.value == 'ДОСТУПНО' %}bg-success
                 {% elif asset.status.value == 'НЕ ДОСТУПНО' %}bg-danger
                 {% else %}bg-warning text-dark{% endif %}">
                 {{ asset.status.value }}
             </span>
+          </a>
       </div>
 
       <div style="display: flex;
