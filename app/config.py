@@ -13,8 +13,8 @@ class Config(object):
         f"sqlite:///{os.path.join(basedir, 'data', 'smart_service.db')}"
     )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    APP_HOST = "http://127.0.0.1:5000"
-    MEDIA_FOLDER = 'media'
+    APP_HOST = os.environ.get("APP_HOST", "http://127.0.0.1:5000")
+    MEDIA_FOLDER = "media"
 
 class ProductionConfig(Config):
     DEBUG = False
