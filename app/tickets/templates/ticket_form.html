@@ -1,17 +1,19 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="col-md-5">
+<div class="col-l-5 col-xl-8 m-auto">
   <div class="card mb-3">
     <div class="card-body">
       <div style="display: flex; align-items: center; justify-content: space-between;">
         <h2>{{ asset }}</h2>
+        <a href="{{ url_for('assets.edit', asset_id=asset.id) }}">
         <span class="badge p-2
                 {% if asset.status.value == 'ДОСТУПНО' %}bg-success
                 {% elif asset.status.value == 'НЕ ДОСТУПНО' %}bg-danger
                 {% else %}bg-warning text-dark{% endif %}">
                 {{ asset.status.value }}
             </span>
+          </a>
       </div>
 
       <div style="display: flex;
@@ -36,11 +38,80 @@
         <p class="mt-2">Нет изображения</p>
       </div>
       {% endif %}
-      <div class="mt-2">
-        <p class="card-text">{{ asset.type.description }}</p>
-        {% if asset.description %}
-        <p class="card-text">{{ asset.details }}</p>
-        {% endif %}
+
+      <!-- Информация о заявке -->
+      <div class="mt-4">
+        <h4>Информация о заявке</h4>
+
+        <div class="card mb-3">
+          <div class="card-body">
+            <div class="row mb-2">
+              <div class="col-md-6">
+                <strong>Дата:</strong> {{ ticket.created.strftime('%d.%m.%Y %H:%M') }}
+              </div>
+              <div class="col-md-6">
+                <strong>Создатель:</strong> {{ ticket.creator }}
+              </div>
+            </div>
+
+            <hr>
+
+            <div class="mb-1">
+              <strong>Проблема:</strong> {{ ticket.option.title if ticket.option else 'Не указана' }}
+            </div>
+            <div class="mb-3 text-muted">
+              <p>{{ ticket.description if ticket.description else 'Описание отсутствует' }}</p>
+            </div>
+
+            <hr>
+
+            <form method="POST" action="{{ url_for('tickets.edit', ticket_id=ticket.id) }}">
+              {{ form.hidden_tag() }}
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  {{ form.department.label(class="form-label") }}
+                  {{ form.department(class="form-select") }}
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label"><strong>Исполнитель:</strong></label>
+                  <div class="d-flex align-items-center justify-content-between">
+                    <span class="me-2">
+                      {% if ticket.assignee %}
+                        {{ ticket.assignee }}
+                      {% else %}
+                        Не назначен
+                      {% endif %}
+                    </span>
+                    {% if not ticket.assignee %}
+                    <button type="submit" name="action" value="take" class="btn btn-success btn-sm">
+                      Взять заявку
+                    </button>
+                    {% elif current_user.id == ticket.assignee.id %}
+                    <button type="submit" name="action" value="release" class="btn btn-danger btn-sm">
+                      Отказаться
+                    </button>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  {{ form.status.label(class="form-label") }}
+                  {{ form.status(class="form-select") }}
+                </div>
+                <div class="col-md-6">
+                  {{ form.result.label(class="form-label") }}
+                  {{ form.result(class="form-select") }}
+                </div>
+              </div>
+
+              <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+              </div>
+            </form>
+          </div>
+        </div>
       </div>
     </div>
   </div>

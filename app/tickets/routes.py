@@ -1,13 +1,14 @@
 import uuid
 from collections import defaultdict
 
-from flask import Blueprint, render_template, redirect, url_for, abort
+from flask import Blueprint, render_template, redirect, url_for, abort, request, flash
 from flask_login import current_user, login_required
 
 from app import db
 from app.assets.models import Asset, AssetTypeOption
-from app.tickets.forms import OptionForm
+from app.tickets.forms import OptionForm, TicketForm
 from app.tickets.models import Ticket, TicketStatus, TicketResults
+from app.users.models import Department
 
 bp = Blueprint('tickets', __name__, url_prefix='/tickets', template_folder="templates")
 
@@ -18,10 +19,50 @@ def ticket_list():
     return render_template("ticket_list.html", tickets=tickets)
 
 
-@bp.get("/<int:ticket_id>")
+@bp.route("/<int:ticket_id>", methods=["GET", "POST"])
+@login_required
 def edit(ticket_id):
     ticket = db.get_or_404(Ticket, ticket_id)
-    return render_template("ticket_form.html", ticket=ticket, asset=ticket.asset)
+    form = TicketForm()
+
+    form.department.choices = [(d.id, d.name) for d in Department.query.all()]
+
+    if request.method == 'GET':
+        form.department.data = ticket.department_id
+        form.status.data = ticket.status.value
+        form.result.data = ticket.result.value
+
+    if form.validate_on_submit():
+        ticket.department_id = form.department.data
+        ticket.status = TicketStatus(form.status.data)
+        ticket.result = TicketResults(form.result.data)
+
+        message = "Изменения сохранены", "success"
+        action = form.submit.data
+        if action == "take":
+            if ticket.assignee_id is None:
+                ticket.assignee_id = current_user.id
+                message = "Вы теперь исполнитель!", "success"
+            else:
+                message = "Эта заявка уже занята!", "danger"
+        elif action == "release":
+            if ticket.assignee_id == current_user.id:
+                ticket.assignee_id = None
+                message = "Вы отказались от заявки!", "success"
+            else:
+                message = "Эта заявка итак свободна", "danger"
+
+        db.session.commit()
+        flash(*message)
+        if action:
+            return redirect(url_for('tickets.edit', ticket_id=ticket_id))
+        else:
+            return redirect(url_for('tickets.ticket_list'))
+
+    return render_template("ticket_form.html",
+                           ticket=ticket,
+                           asset=ticket.asset,
+                           form=form)
 
 
 @bp.route("/new/<asset_uid>", methods=["GET", "POST"])
