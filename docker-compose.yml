@@ -1,0 +1,26 @@
+services:
+
+  smart-service:
+    build: .
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./app:/app/app
+    environment:
+      - FLASK_ENV=production
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/ssl:/etc/letsencrypt
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./nginx/ssl:/etc/letsencrypt
+    command: certonly -d smart-dep.ru -d www.smart-dep.ru --email smartservice@mail.ru --agree-tos --non-interactive
