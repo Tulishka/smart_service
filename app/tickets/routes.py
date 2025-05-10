@@ -18,9 +18,10 @@ def ticket_list():
     return render_template("ticket_list.html", tickets=tickets)
 
 
-@bp.route("/<int:ticket>", methods=["GET", "POST"])
-def edit(ticket):
-    return {}
+@bp.get("/<int:ticket_id>")
+def edit(ticket_id):
+    ticket = db.get_or_404(Ticket, ticket_id)
+    return render_template("ticket_form.html", ticket=ticket, asset=ticket.asset)
 
 
 @bp.route("/new/<asset_uid>", methods=["GET", "POST"])
