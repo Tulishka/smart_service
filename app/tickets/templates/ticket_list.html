@@ -16,7 +16,7 @@
   </thead>
   <tbody>
   {% for ticket in tickets %}
-  <tr onclick="location='{{ url_for('tickets.edit', ticket=ticket.id) }}'">
+  <tr onclick="location='{{ url_for('tickets.edit', ticket_id=ticket.id) }}'">
     <th scope="row">{{ loop.index }}</th>
     <td>{{ ticket.created.strftime('%d.%m.%Y %H:%M') }}</td>
     <td>{{ ticket.asset }}</td>

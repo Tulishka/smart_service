@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="col-md-5">
+  <div class="card mb-3">
+    <div class="card-body">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <h2>{{ asset }}</h2>
+        <span class="badge p-2
+                {% if asset.status.value == 'ДОСТУПНО' %}bg-success
+                {% elif asset.status.value == 'НЕ ДОСТУПНО' %}bg-danger
+                {% else %}bg-warning text-dark{% endif %}">
+                {{ asset.status.value }}
+            </span>
+      </div>
+
+      <div style="display: flex;
+                  gap: 16px;
+                  align-items: baseline;
+                  justify-content: space-between;
+                  margin: 8px 0;">
+        <h5 class="text-secondary">{{ asset.type }}</h5>
+        <div class="text-secondary">{{ asset.address }}</div>
+      </div>
+
+      {% if asset.image %}
+      <img src="{{ url_for('main.media_files', filename='uploads/'+asset.image) }}" class="img-fluid rounded"
+           alt="Изображение асета" style="max-height: 300px;">
+      {% elif asset.type.image %}
+      <img src="{{ url_for('main.media_files', filename='uploads/'+asset.type.image) }}" class="img-fluid rounded"
+           alt="Изображение вида асета"
+           style="max-height: 300px;">
+      {% else %}
+      <div class="bg-light p-5 text-muted rounded">
+        <i class="bi bi-image" style="font-size: 3rem;"></i>
+        <p class="mt-2">Нет изображения</p>
+      </div>
+      {% endif %}
+      <div class="mt-2">
+        <p class="card-text">{{ asset.type.description }}</p>
+        {% if asset.description %}
+        <p class="card-text">{{ asset.details }}</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+</div>
+
+
+{% endblock %}
