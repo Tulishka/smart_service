@@ -9,19 +9,13 @@ from flask_login import current_user, login_user
 from app import db
 
 
-def user_or_404(user_id):
+def user_or_404(user_id, get_user_obj=False):
     user = User.query.get(user_id)
     if not user:
         abort(404, message=F"User {user_id} not found")
-    else:
-        return user_to_dict(user)
-
-
-def abort_if_no_access():
-    if not current_user.is_authenticated:
-        abort(403, message=F"Access allowed only for registered users")
-    else:  # Здесь будем сверять роль пользователя с той, что будет иметь доступ к этому API
-        pass
+    if get_user_obj:
+        return user
+    return user_to_dict(user)
 
 
 def user_to_dict(user):
@@ -36,15 +30,20 @@ def user_to_dict(user):
     }
 
 
+def set_password_or_400(user, password):
+    if len(password) >= 5:
+        user.set_password(password)
+    else:
+        abort(400, message=F"the password length must be >= 5")
+
+
 class UsersResource(Resource):
     def get(self, user_id):
-        abort_if_no_access()
         user = user_or_404(user_id)
         return jsonify({"users": user})
 
     def delete(self, user_id):
-        abort_if_no_access()
-        user = user_or_404(user_id)
+        user = user_or_404(user_id, get_user_obj=True)
 
         users_roles.delete().where(users_roles.c.user_id == user_id)
 
@@ -53,8 +52,7 @@ class UsersResource(Resource):
         return jsonify({"success": "OK"})
 
     def put(self, user_id):
-        abort_if_no_access()
-        user = user_or_404(user_id)
+        user = user_or_404(user_id, get_user_obj=True)
         args = unrequired_parser.parser.parse_args()
 
         new_user_data = {}
@@ -70,41 +68,25 @@ class UsersResource(Resource):
                 user.department_id = new_user_data["department_id"]
 
         if "password" in new_user_data.keys():
-            if len(new_user_data["password"]) >= 5:
-                user.set_password(new_user_data["password"])
-            else:
-                abort("400", message=F"the password length must be >= 5")
+            set_password_or_400(user, new_user_data["password"])
         db.session.commit()
         return jsonify({"success": "OK"})
 
 
 class UsersListResource(Resource):
     def get(self):
-        abort_if_no_access()
         users = list(map(lambda x: user_to_dict(x), User.query.all()))
         return jsonify({"users": users})
 
     def post(self):
-        abort_if_no_access()
         args = standart_parser.parser.parse_args()
         user = User()
 
         user.status = "ACTIVE"
         user.name = args["name"]
         user.phone = args["phone"]
-        user.set_password(args["password"])
+        set_password_or_400(user, args["password"])
         db.session.add(user)
         db.session.commit()
 
         return jsonify({"id": user.id})
-
-
-class LoginResource(Resource):
-    def post(self):
-        args = login_parser.parser.parse_args()
-        user = User.query.filter_by(phone=args["phone"]).first()
-        if not user or not user.check_password(args["password"]):
-            abort("404", message="incorrect phone or password")
-        else:
-            login_user(user)
-            return jsonify({"success": "OK"})

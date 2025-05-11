@@ -1,16 +1,15 @@
 from pprint import pprint
 import requests
 
-with requests.Session() as session:
-    # Вход в систему под данными первого пользователя
-    pprint(session.post("http://127.0.0.1:5000/api/login", json={"phone": "0", "password": "admin"}).json())
+# Получение всех пользователей
+pprint(requests.get("http://127.0.0.1:5000/api/users").json())
 
-    print("--" * 20)
+print("=" * 20)
 
-    # Получение всех пользователей
-    pprint(session.get("http://127.0.0.1:5000/api/users").json())
+# Получение пользователя с id=1
+pprint(requests.get("http://127.0.0.1:5000/api/users/1").json())
 
-    print("--" * 20)
+print("=" * 20)
 
-    # Получение пользователя с id=1
-    pprint(session.get("http://127.0.0.1:5000/api/users/1").json())
+# Запрос к получению юзера с несуществующим id
+pprint(requests.get("http://127.0.0.1:5000/api/users/421412").json())
