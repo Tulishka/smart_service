@@ -2,18 +2,21 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 
 from app import db
 from app.users.forms import UserForm, DepartmentForm
-from app.users.models import User, UserStatus, Role, Department
+from app.users.models import User, UserStatus, Role, Department, Roles
+from app.users.utils import role_required
 
 bp = Blueprint("users", __name__, url_prefix="/users", template_folder="templates")
 
 
 @bp.route("/", methods=["GET"])
+@role_required(Roles.USER_MANAGER)
 def user_list():
     users = db.session.query(User).all()
     return render_template("user_list.html", users=users)
 
 
 @bp.route("/<int:user>", methods=["GET", "POST"])
+@role_required(Roles.USER_MANAGER)
 def edit(user):
     user = db.get_or_404(User, user)
     all_roles = Role.query.all()
@@ -50,12 +53,14 @@ def edit(user):
 
 
 @bp.route("/departments", methods=["GET"])
+@role_required(Roles.USER_MANAGER)
 def department_list():
     departments = db.session.query(Department).all()
     return render_template("department_list.html", departments=departments)
 
 
 @bp.route("/departments/<int:department_id>", methods=["GET", "POST"])
+@role_required(Roles.USER_MANAGER)
 def department(department_id=0):
     department = Department.query.filter_by(id=department_id).one_or_none()
     if not department:
@@ -80,6 +85,7 @@ def department(department_id=0):
 
 
 @bp.delete("/departments/<int:department_id>")
+@role_required(Roles.USER_MANAGER)
 def delete_department(department_id: int):
     dep = db.get_or_404(Department, department_id)
     if len(dep.users) or len(dep.asset_type_options) or len(dep.tickets):

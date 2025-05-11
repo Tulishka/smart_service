@@ -27,15 +27,26 @@
           <li class="nav-item">
             <a class="nav-link {{ 'active' if request.blueprint == 'main' else '' }}" href="{{ url_for('main.index') }}">Главная</a>
           </li>
-          <li class="nav-item">
-            <a class="nav-link {{ 'active' if request.blueprint == 'assets' else '' }}" href="{{ url_for('assets.index') }}">Асеты</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link {{ 'active' if request.blueprint == 'tickets' else '' }}" href="{{ url_for('tickets.ticket_list') }}">Заявки</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link {{ 'active' if request.blueprint == 'users' else '' }}" href="{{ url_for('users.user_list') }}">Пользователи</a>
-          </li>
+            {% if current_user.has_asset_access %}
+              <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.blueprint == 'assets' else '' }}" href="{{ url_for('assets.index') }}">Асеты</a>
+              </li>
+            {% endif %}
+            {% if current_user.has_ticket_access %}
+              <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.blueprint == 'tickets' else '' }}" href="{{ url_for('tickets.ticket_list') }}">Заявки</a>
+              </li>
+            {% endif %}
+            {% if current_user.has_user_access %}
+              <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.blueprint == 'users' else '' }}" href="{{ url_for('users.user_list') }}">Пользователи</a>
+              </li>
+            {% endif %}
+            {% if current_user.has_director_access %}
+              <li class="nav-item">
+                <a class="nav-link {{ 'active' if request.blueprint == 'reports' else '' }}" href="{{ url_for('reports.index') }}">Отчеты</a>
+              </li>
+            {% endif %}
         </ul>
       </div>
       <span class="navbar-nav">

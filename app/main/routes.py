@@ -14,3 +14,9 @@ def index():
 def media_files(filename):
     print(filename)
     return send_from_directory(Config.MEDIA_FOLDER, filename)
+
+
+@bp.route("/forbidden")
+def forbidden():
+    return render_template("403.html")
+
