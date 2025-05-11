@@ -8,12 +8,14 @@ from app import db
 from app.assets.models import Asset, AssetTypeOption, AssetType
 from app.tickets.forms import OptionForm, TicketForm
 from app.tickets.models import Ticket, TicketStatus, TicketResults
-from app.users.models import Department, User, Role
+from app.users.models import Department, User, Role, Roles
+from app.users.utils import role_required
 
 bp = Blueprint('tickets', __name__, url_prefix='/tickets', template_folder="templates")
 
 
 @bp.route("/", methods=["GET"])
+@role_required(Roles.WORKER)
 def ticket_list():
     args = request.args.to_dict()
 
@@ -85,7 +87,7 @@ def ticket_list():
 
 
 @bp.route("/<int:ticket_id>", methods=["GET", "POST"])
-@login_required
+@role_required(Roles.WORKER)
 def edit(ticket_id):
     ticket = db.get_or_404(Ticket, ticket_id)
     form = TicketForm()
@@ -131,7 +133,7 @@ def edit(ticket_id):
 
 
 @bp.route("/new/<asset_uid>", methods=["GET", "POST"])
-@login_required
+@role_required(Roles.WORKER)
 def asset_detail(asset_uid):
     asset = Asset.query.filter_by(uid=uuid.UUID(asset_uid)).one_or_none()
     if not asset:
@@ -167,7 +169,7 @@ def asset_detail(asset_uid):
         )
         db.session.add(ticket)
         db.session.commit()
-        flash(f"Заявка успешно создана!","success")
+        flash(f"Заявка успешно создана!", "success")
         return redirect(url_for('tickets.asset_detail', asset_uid=asset_uid))
 
     return render_template(
