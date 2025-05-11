@@ -7,11 +7,53 @@
   <tr>
     <th scope="col">#</th>
     <th scope="col">Дата создания</th>
-    <th scope="col">Асет</th>
-    <th scope="col">Отдел</th>
-    <th scope="col">Исполнитель</th>
-    <th scope="col">Статус</th>
-    <th scope="col">Результат</th>
+
+    <th scope="col">Асет
+      <select id="asset">
+        <option value="all">ЛЮБОЙ</option>
+        {% for asset in assets%}
+          <option value="{{ asset[0] }}">{{ asset[1] }}</option>
+        {% endfor %}
+      </select>
+    </th>
+
+    <th scope="col">Отдел
+    <select id="department">
+        <option value="all">ЛЮБОЙ</option>
+        {% for department in departments%}
+          <option value="{{ loop.index }}">{{ department }}</option>
+        {% endfor %}
+    </select>
+    </th>
+
+    <th scope="col">Исполнитель
+    <select id="operator">
+        <option value="all" selected>ЛЮБОЙ</option>
+        {% for operator in operators %}
+          <option value="{{ operator[0] }}">{{ operator[1] }}</option>
+        {% endfor %}
+    </select>
+    </th>
+
+    <th scope="col">Статус
+    <select id="status">
+      <option value="all" selected>ЛЮБОЙ</option>
+      <option value="0">ОТКРЫТ</option>
+      <option value="1">ЗАКРЫТ</option>
+    </select>
+    </th>
+
+    <th scope="col">Результат
+    <select id="result">
+      <option value="all" selected>ЛЮБОЙ</option>
+      <option value="0">НОВЫЙ</option>
+      <option value="1">В РАБОТЕ</option>
+      <option value="2">ВЫПОЛНЕНО</option>
+      <option value="3">НЕ ВЫПОЛНЕНО</option>
+      <option value="4">ОТМЕНЕНО</option>
+    </select>
+    </th>
+
   </tr>
   </thead>
   <tbody>
@@ -28,5 +70,88 @@
   {% endfor %}
   </tbody>
 </table>
+
+<script>
+  function updateUrlParams() {
+    const url = new URL(window.location.href);
+
+    const assetSelect = document.getElementById('asset');
+    const selectedAsset = assetSelect.value;
+    if (selectedAsset === 'all') {
+      url.searchParams.delete('asset');
+    } else {
+      url.searchParams.set('asset', selectedAsset);
+    }
+
+    const departmentSelect = document.getElementById('department');
+    const selectedDepartment = departmentSelect.value;
+    if (selectedDepartment === 'all') {
+      url.searchParams.delete('department');
+    } else {
+      url.searchParams.set('department', selectedDepartment);
+    }
+
+    const operatorSelect = document.getElementById('operator');
+    const selectedOperator = operatorSelect.value;
+    if (selectedOperator === 'all') {
+      url.searchParams.delete('operator');
+    } else {
+      url.searchParams.set('operator', selectedOperator);
+    }
+
+    const statusSelect = document.getElementById('status');
+    const selectedStatus = statusSelect.value;
+    if (selectedStatus === 'all') {
+      url.searchParams.delete('status');
+    } else {
+      url.searchParams.set('status', selectedStatus);
+    }
+
+    const resultSelect = document.getElementById('result');
+    const selectedResult = resultSelect.value;
+    if (selectedResult === 'all') {
+      url.searchParams.delete('result');
+    } else {
+      url.searchParams.set('result', selectedResult);
+    }
+
+    window.location.href = url.toString();
+  }
+
+  document.getElementById('asset').addEventListener('change', updateUrlParams);
+  document.getElementById('department').addEventListener('change', updateUrlParams);
+  document.getElementById('operator').addEventListener('change', updateUrlParams);
+  document.getElementById('status').addEventListener('change', updateUrlParams);
+  document.getElementById('result').addEventListener('change', updateUrlParams);
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    const currentAsset = urlParams.get('asset');
+    if (currentAsset) {
+      document.getElementById('asset').value = currentAsset;
+    }
+
+    const currentDepartment = urlParams.get('department');
+    if (currentDepartment) {
+      document.getElementById('department').value = currentDepartment;
+    }
+
+    const currentOperator = urlParams.get('operator');
+    if (currentOperator) {
+      document.getElementById('operator').value = currentOperator;
+    }
+
+    const currentStatus = urlParams.get('status');
+    if (currentStatus) {
+      document.getElementById('status').value = currentStatus;
+    }
+
+    const currentResult = urlParams.get('result');
+    if (currentResult) {
+      document.getElementById('result').value = currentResult;
+    }
+  });
+</script>
 
 {% endblock %}

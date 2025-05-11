@@ -5,18 +5,83 @@ from flask import Blueprint, render_template, redirect, url_for, abort, request,
 from flask_login import current_user, login_required
 
 from app import db
-from app.assets.models import Asset, AssetTypeOption
+from app.assets.models import Asset, AssetTypeOption, AssetType
 from app.tickets.forms import OptionForm, TicketForm
 from app.tickets.models import Ticket, TicketStatus, TicketResults
-from app.users.models import Department
+from app.users.models import Department, User, Role
 
 bp = Blueprint('tickets', __name__, url_prefix='/tickets', template_folder="templates")
 
 
 @bp.route("/", methods=["GET"])
 def ticket_list():
-    tickets = Ticket.query.all()
-    return render_template("ticket_list.html", tickets=tickets)
+    args = request.args.to_dict()
+
+    query = Ticket.query
+    assets = list({(ticket.asset.uid, ticket.asset.name) for ticket in Ticket.query.all()})
+    departments = [department.name for department in Department.query.all()]
+    operators = [(operator.auid, operator.name) for operator in User.query.filter(User.roles.any(id=2)).all()]
+
+    if "asset" in args:
+        try:
+            asset_uid = str(args["asset"])
+            query = query.filter(Ticket.asset.has(uid=uuid.UUID(asset_uid)))
+        except Exception as ex:
+            flash(F"Не удалось обработать параметр асета | {ex}", category="danger")
+            return redirect(url_for("tickets.ticket_list"))
+
+    if "department" in args:
+        try:
+            department_id = int(args["department"])
+            query = query.filter(Ticket.department_id == department_id)
+        except Exception as ex:
+            flash(F"Не удалось обработать параметр отдела | {ex}")
+            return redirect(url_for("tickets.ticket_list"))
+
+    if "operator" in args:
+        try:
+            operator_auid = args["operator"]
+            query = query.filter(Ticket.assignee.has(auid=uuid.UUID(operator_auid)))
+        except Exception as ex:
+            flash(F"Не удалось обработать параметр исполнителя | {ex}", category="danger")
+            return redirect(url_for("tickets.ticket_list"))
+
+    if "status" in args:
+        try:
+            status_id = int(args["status"])
+
+            statuses = {0: "OPENED", 1: "CLOSED"}
+            status = statuses[status_id]
+
+            query = query.filter(Ticket.status == status)
+        except Exception as ex:
+            flash(F"Не удалось обработать параметр статуса | {ex}", category="danger")
+            return redirect(url_for("tickets.ticket_list"))
+
+    if "result" in args:
+        try:
+            result_id = int(args["result"])
+
+            results = {0: "NEW", 1: "IN_WORK", 2: "DONE", 3: "FAIL", 4: "CANCELED"}
+            result = results[result_id]
+
+            query = query.filter(Ticket.result == result)
+        except Exception as ex:
+            flash(F"Не удалось обработать параметр результата | {ex}", category="danger")
+            return redirect(url_for("tickets.ticket_list"))
+
+    try:
+        tickets = query.all()
+    except Exception as ex:
+        flash(F"Не удалось осуществить запрос к БД | {ex}",
+              category="danger")
+        tickets = []
+
+    return render_template("ticket_list.html",
+                           tickets=tickets,
+                           assets=assets,
+                           departments=departments,
+                           operators=operators)
 
 
 @bp.route("/<int:ticket_id>", methods=["GET", "POST"])
