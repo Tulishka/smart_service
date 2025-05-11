@@ -23,7 +23,7 @@
       <th scope="col">Вид
         <select id="types">
           <option value="all" selected>ВСЕ ВИДЫ</option>
-          {% for type in types %}
+          {% for type in types_var %}
             <option value="{{ type }}">{{ type }}</option>
           {% endfor %}
         </select>

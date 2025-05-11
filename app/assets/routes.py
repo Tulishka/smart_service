@@ -21,9 +21,26 @@ os.makedirs(f"app/{Config.MEDIA_FOLDER}/qr", exist_ok=True)
 
 @bp.route("/")
 def index():
+    args = request.args.to_dict()
+
     assets = Asset.query.all()
-    types = [type_.name for type_ in AssetType.query.all()]
-    return render_template("assets_list.html", assets=assets, types=types)
+    types_variations = [type_.name for type_ in AssetType.query.all()]
+
+    if "type" in args:
+        type_id = int(args["type"])
+        assets = [asset for asset in assets if type_id == asset.type_id]
+
+    if "status" in args:
+        statuses = {0: "ACTIVE", 1: "INACTIVE", 2: "MAINTENANCE"}
+        status = statuses[int(args["status"])]
+        for asset in assets:
+            print(asset.status.name)
+
+        assets = [asset for asset in assets if status == asset.status.name]
+
+    return render_template("assets_list.html",
+                           assets=assets,
+                           types_var=types_variations)
 
 
 @bp.route("/codes")
