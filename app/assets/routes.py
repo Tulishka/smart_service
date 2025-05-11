@@ -10,8 +10,9 @@ from app.config import Config
 from app.assets.forms import AssetTypeForm, AssetForm
 from app.assets.models import AssetType, AssetTypeOption, Asset, AssetStatus
 from app.core import utils
-from app.users.models import Department
+from app.users.models import Department, Roles
 from app.assets.qr import create_qr_if_need
+from app.users.utils import role_required
 
 bp = Blueprint("assets", __name__, url_prefix="/assets", template_folder="templates")
 
@@ -20,6 +21,7 @@ os.makedirs(f"app/{Config.MEDIA_FOLDER}/qr", exist_ok=True)
 
 
 @bp.route("/")
+@role_required(Roles.ASSET_MANAGER)
 def index():
     args = request.args.to_dict()
 
@@ -61,6 +63,7 @@ def index():
 
 
 @bp.route("/codes")
+@role_required(Roles.ASSET_MANAGER)
 def codes():
     error_message = ""
     try:
@@ -89,12 +92,14 @@ def codes():
 
 
 @bp.route("/codes_process", methods=["POST"])
+@role_required(Roles.ASSET_MANAGER)
 def codes_process():
     selected_ids = ",".join(request.form.getlist('checkboxes'))
     return redirect(url_for("assets.codes", assets=selected_ids))
 
 
 @bp.route("/type/<int:type_id>", methods=["GET", "POST"])
+@role_required(Roles.ASSET_MANAGER)
 def edit_type(type_id=0):
     asset_type = db.session.query(AssetType).filter_by(id=type_id).one_or_none()
     departments = [{"id": dep.id, "name": dep.name} for dep in Department.query.all()]
@@ -191,12 +196,14 @@ def edit_type(type_id=0):
 
 
 @bp.get("/types")
+@role_required(Roles.ASSET_MANAGER)
 def types():
     data = AssetType.query.all()
     return render_template("types_list.html", data=data)
 
 
 @bp.delete("/types/<int:type_id>")
+@role_required(Roles.ASSET_MANAGER)
 def delete_type(type_id: int):
     atype = db.get_or_404(AssetType, type_id)
     if len(atype.assets):
@@ -209,6 +216,7 @@ def delete_type(type_id: int):
 
 
 @bp.route("/<int:asset_id>", methods=["GET", "POST"])
+@role_required(Roles.ASSET_MANAGER)
 def edit(asset_id=0, type_id=0):
     asset = Asset.query.filter_by(id=asset_id).one_or_none()
     types = AssetType.query.all()

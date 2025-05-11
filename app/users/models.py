@@ -10,6 +10,13 @@ from app.database import model_const as mc
 from app import db, login_manager
 
 
+class Roles(PyEnum):
+    USER_MANAGER = "Менеджер по персоналу"
+    ASSET_MANAGER = "Менеджер асетов"
+    WORKER = "Исполнитель"
+    DIRECTOR = "Руководитель"
+
+
 class UserStatus(PyEnum):
     ACTIVE = "ДОСТУПЕН"
     INACTIVE = "НЕ ДОСТУПЕН"
@@ -45,6 +52,25 @@ class User(db.Model, UserModelMix):
 
     def role_names(self):
         return ", ".join(role.name for role in self.roles)
+
+    def has_role(self, role: Roles) -> bool:
+        return role.value in (role.name for role in self.roles)
+
+    @property
+    def has_asset_access(self) -> bool:
+        return self.has_role(Roles.ASSET_MANAGER)
+
+    @property
+    def has_ticket_access(self) -> bool:
+        return self.has_role(Roles.WORKER)
+
+    @property
+    def has_user_access(self) -> bool:
+        return self.has_role(Roles.USER_MANAGER)
+
+    @property
+    def has_director_access(self) -> bool:
+        return self.has_role(Roles.DIRECTOR)
 
     def __str__(self):
         return f"{self.name}"
