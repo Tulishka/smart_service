@@ -42,7 +42,9 @@
         </p>
         <p class="lead mb-4">Решаем офисные проблемы в один клик через QR-коды</p>
         <a href="#how-it-works" class="btn btn-light btn-lg px-4 me-2">Как это работает</a>
-        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg px-4">Войти в систему</a>
+          {% if not current_user.is_authenticated %}
+            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg px-4">Войти в систему</a>
+          {% endif %}
       </div>
       <div class="col-lg-6">
         <img src="{{ url_for('static', filename='img/main-qr.jpg') }}" alt="Демонстрация сервиса" class="img-fluid rounded-3 shadow">
