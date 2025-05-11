@@ -66,28 +66,27 @@ def edit_type(type_id=0):
     departments = [{"id": dep.id, "name": dep.name} for dep in Department.query.all()]
     options = []
 
-    if request.method == "GET":
-        if asset_type:
-            options = [
-                {
-                    'id': opt.id,
-                    'title': opt.title,
-                    'description': opt.description,
-                    'department_id': opt.department_id,
-                    'department': {'id': opt.department.id, 'name': opt.department.name} if opt.department else None
-                }
-                for opt in asset_type.options
-            ]
-            form = AssetTypeForm(
-                name=asset_type.name,
-                description=asset_type.description,
-                qr_help_text=asset_type.qr_help_text,
-                image=asset_type.image
-            )
-        else:
-            form = AssetTypeForm()
+    if asset_type:
+        options = [
+            {
+                'id': opt.id,
+                'title': opt.title,
+                'description': opt.description,
+                'department_id': opt.department_id,
+                'department': {'id': opt.department.id, 'name': opt.department.name} if opt.department else None
+            }
+            for opt in asset_type.options
+        ]
+        form = AssetTypeForm(
+            name=asset_type.name,
+            description=asset_type.description,
+            qr_help_text=asset_type.qr_help_text,
+            image=asset_type.image
+        )
     else:
         form = AssetTypeForm()
+
+    if request.method == "POST":
         if form.validate_on_submit():
             options_data = request.form.get('options_data', '[]')
             options = json.loads(options_data)

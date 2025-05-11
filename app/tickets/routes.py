@@ -101,6 +101,7 @@ def asset_detail(asset_uid):
         )
         db.session.add(ticket)
         db.session.commit()
+        flash(f"Заявка успешно создана!","success")
         return redirect(url_for('tickets.asset_detail', asset_uid=asset_uid))
 
     return render_template(
