@@ -42,7 +42,8 @@ def index():
             status_id = int(args["status"])
             statuses = {0: "ACTIVE", 1: "INACTIVE", 2: "MAINTENANCE"}
             status = statuses[status_id]
-            query = query.filter(Asset.status.name == status)
+            print(status)
+            query = query.filter(Asset.status == status)
         except Exception as ex:
             flash(F"Ошибка при обработке параметра status. Проверьте корректность запроса | {ex}",
                   category="danger")
@@ -53,7 +54,7 @@ def index():
     except Exception as ex:
         flash(F"Не удалось осуществить запрос к БД. | {ex}",
               category="danger")
-        return redirect(url_for("assets.index"))
+        assets = []
 
     return render_template("assets_list.html",
                            assets=assets,
