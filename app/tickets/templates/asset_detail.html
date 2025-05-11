@@ -68,8 +68,18 @@
           </div>
           {% endfor %}
         </div>
-        {{has}}
         {% if has_options %}
+          <div class="mb-3">
+            {{ form.description.label(class="form-label") }}
+            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else "")) }}
+            {% if form.description.errors %}
+            <div class="invalid-feedback">
+              {% for error in form.description.errors %}
+              {{ error }}
+              {% endfor %}
+            </div>
+            {% endif %}
+          </div>
           {{ form.submit(class="btn btn-primary w-100") }}
         {% endif %}
       </form>

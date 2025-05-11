@@ -97,6 +97,7 @@ def asset_detail(asset_uid):
             status=TicketStatus.OPENED,
             result=TicketResults.NEW,
             option_id=selected_option_id,
+            description=form.description.data,
             department_id=dep_id
         )
         db.session.add(ticket)
