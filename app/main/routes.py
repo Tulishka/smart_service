@@ -12,7 +12,6 @@ def index():
 
 @bp.route('/media/<path:filename>')
 def media_files(filename):
-    print(filename)
     return send_from_directory(Config.MEDIA_FOLDER, filename)
 
 

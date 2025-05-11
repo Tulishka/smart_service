@@ -44,7 +44,6 @@ def index():
             status_id = int(args["status"])
             statuses = {0: "ACTIVE", 1: "INACTIVE", 2: "MAINTENANCE"}
             status = statuses[status_id]
-            print(status)
             query = query.filter(Asset.status == status)
         except Exception as ex:
             flash(F"Ошибка при обработке параметра status. Проверьте корректность запроса | {ex}",
