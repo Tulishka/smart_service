@@ -21,9 +21,44 @@ os.makedirs(f"app/{Config.MEDIA_FOLDER}/qr", exist_ok=True)
 
 @bp.route("/")
 def index():
-    assets = Asset.query.all()
-    types = [type_.name for type_ in AssetType.query.all()]
-    return render_template("assets_list.html", assets=assets, types=types)
+    args = request.args.to_dict()
+
+    query = Asset.query
+    types_variations = [type_.name for type_ in AssetType.query.all()]
+
+    if "type" in args:
+        try:
+            type_id = int(args["type"])
+            query = query.filter(Asset.type_id == type_id)
+            if not query:
+                raise Exception("there were no assets with this id")
+        except Exception as ex:
+            flash(F"Ошибка при обработке параметра type. Проверьте корректность запроса | {ex}",
+                  category="danger")
+            return redirect(url_for("assets.index"))
+
+    if "status" in args:
+        try:
+            status_id = int(args["status"])
+            statuses = {0: "ACTIVE", 1: "INACTIVE", 2: "MAINTENANCE"}
+            status = statuses[status_id]
+            print(status)
+            query = query.filter(Asset.status == status)
+        except Exception as ex:
+            flash(F"Ошибка при обработке параметра status. Проверьте корректность запроса | {ex}",
+                  category="danger")
+            return redirect(url_for("assets.index"))
+
+    try:
+        assets = query.all()
+    except Exception as ex:
+        flash(F"Не удалось осуществить запрос к БД. | {ex}",
+              category="danger")
+        assets = []
+
+    return render_template("assets_list.html",
+                           assets=assets,
+                           types_var=types_variations)
 
 
 @bp.route("/codes")

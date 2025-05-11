@@ -23,8 +23,8 @@
       <th scope="col">Вид
         <select id="types">
           <option value="all" selected>ВСЕ ВИДЫ</option>
-          {% for type in types %}
-            <option value="{{ type }}">{{ type }}</option>
+          {% for type in types_var %}
+            <option value="{{ loop.index }}">{{ type }}</option>
           {% endfor %}
         </select>
       </th>
@@ -32,9 +32,9 @@
       <th scope="col">Статус
         <select id="status">
           <option value="all" selected>ЛЮБОЙ СТАТУС</option>
-          <option value="ДОСТУПНО">ДОСТУПНО</option>
-          <option value="НЕ ДОСТУПНО">НЕ ДОСТУПНО</option>
-          <option value="НА ОБСЛУЖИВАНИИ">НА ОБСЛУЖИВАНИИ</option>
+          <option value="0">ДОСТУПНО</option>
+          <option value="1">НЕ ДОСТУПНО</option>
+          <option value="2">НА ОБСЛУЖИВАНИИ</option>
         </select>
       </th>
       <th scope="col" class="text-center">Выбор</th>
@@ -70,34 +70,45 @@
         }
   </script>
 
-  <script>
-  document.addEventListener('DOMContentLoaded', function() {
+
+<script>
+  function updateUrlParams() {
+    const url = new URL(window.location.href);
+
     const typesSelect = document.getElementById('types');
-    const statusSelect = document.getElementById('status');
-    const rows = document.querySelectorAll('.asset-row');
-
-    function filterRows() {
-      const selectedType = typesSelect.value;
-      const selectedStatus = statusSelect.value;
-
-      rows.forEach(row => {
-        const rowType = row.getAttribute('data-type');
-        const rowStatus = row.getAttribute('data-status');
-
-        const typeMatch = selectedType === 'all' || rowType === selectedType;
-        const statusMatch = selectedStatus === 'all' || rowStatus === selectedStatus;
-
-        if (typeMatch && statusMatch) {
-          row.style.display = '';
-        } else {
-          row.style.display = 'none';
-        }
-      });
+    const selectedType = typesSelect.value;
+    if (selectedType === 'all') {
+      url.searchParams.delete('type');
+    } else {
+      url.searchParams.set('type', selectedType);
     }
 
-    typesSelect.addEventListener('change', filterRows);
-    statusSelect.addEventListener('change', filterRows);
-  });
-  </script>
+    const statusSelect = document.getElementById('status');
+    const selectedStatus = statusSelect.value;
+    if (selectedStatus === 'all') {
+      url.searchParams.delete('status');
+    } else {
+      url.searchParams.set('status', selectedStatus);
+    }
 
+    window.location.href = url.toString();
+  }
+
+  document.getElementById('types').addEventListener('change', updateUrlParams);
+  document.getElementById('status').addEventListener('change', updateUrlParams);
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    const currentType = urlParams.get('type');
+    if (currentType) {
+      document.getElementById('types').value = currentType;
+    }
+
+    const currentStatus = urlParams.get('status');
+    if (currentStatus) {
+      document.getElementById('status').value = currentStatus;
+    }
+  });
+</script>
 {% endblock %}
