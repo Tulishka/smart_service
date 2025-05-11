@@ -48,7 +48,12 @@ def index():
                   category="danger")
             return redirect(url_for("assets.index"))
 
-    assets = query.all()
+    try:
+        assets = query.all()
+    except Exception as ex:
+        flash(F"Не удалось осуществить запрос к БД. | {ex}",
+              category="danger")
+        return redirect(url_for("assets.index"))
 
     return render_template("assets_list.html",
                            assets=assets,
