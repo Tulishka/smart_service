@@ -8,3 +8,4 @@ requests
 qrcode
 pillow
 markupsafe
+psycopg2-binary

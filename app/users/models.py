@@ -26,7 +26,7 @@ class User(db.Model, UserModelMix):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(mc.NAME_LEN), nullable=False)
     phone = Column(String(mc.PHONE_LEN), unique=True, nullable=False)
-    hashed_password = Column(String(mc.SHORT_LEN), nullable=True)
+    hashed_password = Column(String(mc.URL_LEN), nullable=True)
     department_id = Column(ForeignKey("departments.id", ondelete="SET NULL"), nullable=True)
     status = Column(Enum(UserStatus), nullable=False)
     auid = Column(Uuid(), default=lambda: uuid.uuid4())
