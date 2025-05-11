@@ -1,30 +1,43 @@
 {% extends "base.html" %}
 
 {% block content %}
-<style>
-
-
-</style>
 
 <form action="codes_process" method="POST">
-<div class="container">
-  <ul class="nav nav-underline mb-3">
+  <div class="container">
+    <div class="d-flex justify-content-between mb-3">
+    <ul class="nav nav-underline">
     <li class="nav-item">
       <a class="nav-link active disabled">Асеты</a>
     </li>
     <li class="nav-item">
       <a class="nav-link" href="{{ url_for('assets.types') }}">Виды асетов</a>
     </li>
-  </ul>
-  <table class="table">
+    </ul>
+    <button id="print_qr_codes" class="btn btn-sm btn-secondary sticky d-none" type="submit">Печать QR</button>
+  </div>
+  <table id="data" class="table">
     <thead>
     <tr>
       <th scope="col">#</th>
       <th scope="col">Адрес</th>
-      <th scope="col">Вид</th>
+      <th scope="col">Вид
+        <select id="types">
+          <option value="all" selected>ВСЕ ВИДЫ</option>
+          {% for type in types_var %}
+            <option value="{{ loop.index }}">{{ type }}</option>
+          {% endfor %}
+        </select>
+      </th>
       <th scope="col">Название</th>
-      <th scope="col">Статус</th>
-      <th scope="col">Печать</th>
+      <th scope="col">Статус
+        <select id="status">
+          <option value="all" selected>ЛЮБОЙ СТАТУС</option>
+          <option value="0">ДОСТУПНО</option>
+          <option value="1">НЕ ДОСТУПНО</option>
+          <option value="2">НА ОБСЛУЖИВАНИИ</option>
+        </select>
+      </th>
+      <th scope="col" class="text-center">Выбор</th>
     </tr>
     </thead>
     <tbody>
@@ -34,21 +47,68 @@
       </td>
     </tr>
     {% for asset in assets %}
-    <tr onclick="location='{{ url_for('assets.edit', asset_id=asset.id) }}'">
+    <tr class="asset-row" data-type="{{ asset.type.name }}" data-status="{{ asset.status.value }}" onclick="location='{{ url_for('assets.edit', asset_id=asset.id) }}'">
       <td scope="row">{{ loop.index }}</td>
       <td>{{ asset.address }}</td>
-      <td>{{ asset.type.name }}</td>
-      <td>{{ asset.name }}</td>
+      <td>{{ asset.type }}</td>
+      <td>{{ asset }}</td>
       <td>{{ asset.status.value }}</td>
-      <td><input type="checkbox" name="checkboxes" onclick=event.stopPropagation() value="{{ asset.id }}"></td>
+      <td class="text-center" onclick="event.stopPropagation()" onchange="print_checkbox_change()"><input type="checkbox" name="checkboxes" value="{{ asset.id }}"></td>
     </tr>
     {% endfor %}
     </tbody>
   </table>
-  <div class="d-grid gap-2">
-    <button class="btn btn-dark" type="submit">Печать QR-кодов</button>
-  </div>
-  <br>
 </div>
 </form>
+
+  <script>
+        function print_checkbox_change() {
+            let checked = Array.from(document.querySelectorAll('input[name=checkboxes]').values())
+                .filter(x=>x.checked).map(x=>x.value);
+            const button = document.getElementById('print_qr_codes');
+            button.classList.toggle('d-none',checked.length===0);
+        }
+  </script>
+
+
+<script>
+  function updateUrlParams() {
+    const url = new URL(window.location.href);
+
+    const typesSelect = document.getElementById('types');
+    const selectedType = typesSelect.value;
+    if (selectedType === 'all') {
+      url.searchParams.delete('type');
+    } else {
+      url.searchParams.set('type', selectedType);
+    }
+
+    const statusSelect = document.getElementById('status');
+    const selectedStatus = statusSelect.value;
+    if (selectedStatus === 'all') {
+      url.searchParams.delete('status');
+    } else {
+      url.searchParams.set('status', selectedStatus);
+    }
+
+    window.location.href = url.toString();
+  }
+
+  document.getElementById('types').addEventListener('change', updateUrlParams);
+  document.getElementById('status').addEventListener('change', updateUrlParams);
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+
+    const currentType = urlParams.get('type');
+    if (currentType) {
+      document.getElementById('types').value = currentType;
+    }
+
+    const currentStatus = urlParams.get('status');
+    if (currentStatus) {
+      document.getElementById('status').value = currentStatus;
+    }
+  });
+</script>
 {% endblock %}

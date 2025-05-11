@@ -10,6 +10,13 @@ from app.database import model_const as mc
 from app import db, login_manager
 
 
+class Roles(PyEnum):
+    USER_MANAGER = "Менеджер по персоналу"
+    ASSET_MANAGER = "Менеджер асетов"
+    WORKER = "Исполнитель"
+    DIRECTOR = "Руководитель"
+
+
 class UserStatus(PyEnum):
     ACTIVE = "ДОСТУПЕН"
     INACTIVE = "НЕ ДОСТУПЕН"
@@ -26,7 +33,7 @@ class User(db.Model, UserModelMix):
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(mc.NAME_LEN), nullable=False)
     phone = Column(String(mc.PHONE_LEN), unique=True, nullable=False)
-    hashed_password = Column(String(mc.SHORT_LEN), nullable=True)
+    hashed_password = Column(String(mc.URL_LEN), nullable=True)
     department_id = Column(ForeignKey("departments.id", ondelete="SET NULL"), nullable=True)
     status = Column(Enum(UserStatus), nullable=False)
     auid = Column(Uuid(), default=lambda: uuid.uuid4())
@@ -46,6 +53,28 @@ class User(db.Model, UserModelMix):
     def role_names(self):
         return ", ".join(role.name for role in self.roles)
 
+    def has_role(self, role: Roles) -> bool:
+        return role.value in (role.name for role in self.roles)
+
+    @property
+    def has_asset_access(self) -> bool:
+        return self.has_role(Roles.ASSET_MANAGER)
+
+    @property
+    def has_ticket_access(self) -> bool:
+        return self.has_role(Roles.WORKER)
+
+    @property
+    def has_user_access(self) -> bool:
+        return self.has_role(Roles.USER_MANAGER)
+
+    @property
+    def has_director_access(self) -> bool:
+        return self.has_role(Roles.DIRECTOR)
+
+    def __str__(self):
+        return f"{self.name}"
+
 
 class Department(db.Model):
     __tablename__ = "departments"
@@ -57,12 +86,18 @@ class Department(db.Model):
     asset_type_options = db.relationship("AssetTypeOption", back_populates="department")
     tickets = db.relationship("Ticket", back_populates="department")
 
+    def __str__(self):
+        return f"{self.name}"
+
 
 class Role(db.Model):
     __tablename__ = "roles"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     name = Column(String(mc.NAME_LEN), unique=True, nullable=False)
+
+    def __str__(self):
+        return f"{self.name}"
 
 
 users_roles = db.Table(

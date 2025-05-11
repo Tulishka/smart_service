@@ -10,22 +10,60 @@ from app.config import Config
 from app.assets.forms import AssetTypeForm, AssetForm
 from app.assets.models import AssetType, AssetTypeOption, Asset, AssetStatus
 from app.core import utils
-from app.users.models import Department
+from app.users.models import Department, Roles
 from app.assets.qr import create_qr_if_need
+from app.users.utils import role_required
 
 bp = Blueprint("assets", __name__, url_prefix="/assets", template_folder="templates")
 
-os.makedirs("app/static/assets/uploads", exist_ok=True)
-os.makedirs("app/static/assets/qr", exist_ok=True)
+os.makedirs(f"app/{Config.MEDIA_FOLDER}/uploads", exist_ok=True)
+os.makedirs(f"app/{Config.MEDIA_FOLDER}/qr", exist_ok=True)
 
 
 @bp.route("/")
+@role_required(Roles.ASSET_MANAGER)
 def index():
-    assets = Asset.query.all()
-    return render_template("assets_list.html", assets=assets)
+    args = request.args.to_dict()
+
+    query = Asset.query
+    types_variations = [type_.name for type_ in AssetType.query.all()]
+
+    if "type" in args:
+        try:
+            type_id = int(args["type"])
+            query = query.filter(Asset.type_id == type_id)
+            if not query:
+                raise Exception("there were no assets with this id")
+        except Exception as ex:
+            flash(F"Ошибка при обработке параметра type. Проверьте корректность запроса | {ex}",
+                  category="danger")
+            return redirect(url_for("assets.index"))
+
+    if "status" in args:
+        try:
+            status_id = int(args["status"])
+            statuses = {0: "ACTIVE", 1: "INACTIVE", 2: "MAINTENANCE"}
+            status = statuses[status_id]
+            query = query.filter(Asset.status == status)
+        except Exception as ex:
+            flash(F"Ошибка при обработке параметра status. Проверьте корректность запроса | {ex}",
+                  category="danger")
+            return redirect(url_for("assets.index"))
+
+    try:
+        assets = query.all()
+    except Exception as ex:
+        flash(F"Не удалось осуществить запрос к БД. | {ex}",
+              category="danger")
+        assets = []
+
+    return render_template("assets_list.html",
+                           assets=assets,
+                           types_var=types_variations)
 
 
 @bp.route("/codes")
+@role_required(Roles.ASSET_MANAGER)
 def codes():
     error_message = ""
     try:
@@ -34,7 +72,12 @@ def codes():
 
         assets = db.session.query(Asset).filter(Asset.id.in_(assets_ids)).all()
         assets_data = [
-            {"id": str(asset.id), "name": asset.name, "qr_help_text": asset.type.qr_help_text}
+            {
+                "id": str(asset.id),
+                "uid": str(asset.uid),
+                "name": asset.name,
+                "qr_help_text": asset.type.qr_help_text,
+            }
             for asset in assets
         ]
 
@@ -49,39 +92,40 @@ def codes():
 
 
 @bp.route("/codes_process", methods=["POST"])
+@role_required(Roles.ASSET_MANAGER)
 def codes_process():
     selected_ids = ",".join(request.form.getlist('checkboxes'))
     return redirect(url_for("assets.codes", assets=selected_ids))
 
 
 @bp.route("/type/<int:type_id>", methods=["GET", "POST"])
+@role_required(Roles.ASSET_MANAGER)
 def edit_type(type_id=0):
     asset_type = db.session.query(AssetType).filter_by(id=type_id).one_or_none()
     departments = [{"id": dep.id, "name": dep.name} for dep in Department.query.all()]
     options = []
 
-    if request.method == "GET":
-        if asset_type:
-            options = [
-                {
-                    'id': opt.id,
-                    'title': opt.title,
-                    'description': opt.description,
-                    'department_id': opt.department_id,
-                    'department': {'id': opt.department.id, 'name': opt.department.name} if opt.department else None
-                }
-                for opt in asset_type.options
-            ]
-            form = AssetTypeForm(
-                name=asset_type.name,
-                description=asset_type.description,
-                qr_help_text=asset_type.qr_help_text,
-                image=asset_type.image
-            )
-        else:
-            form = AssetTypeForm()
+    if asset_type:
+        options = [
+            {
+                'id': opt.id,
+                'title': opt.title,
+                'description': opt.description,
+                'department_id': opt.department_id,
+                'department': {'id': opt.department.id, 'name': opt.department.name} if opt.department else None
+            }
+            for opt in asset_type.options
+        ]
+        form = AssetTypeForm(
+            name=asset_type.name,
+            description=asset_type.description,
+            qr_help_text=asset_type.qr_help_text,
+            image=asset_type.image
+        )
     else:
         form = AssetTypeForm()
+
+    if request.method == "POST":
         if form.validate_on_submit():
             options_data = request.form.get('options_data', '[]')
             options = json.loads(options_data)
@@ -93,7 +137,7 @@ def edit_type(type_id=0):
                     asset_type = AssetType()
 
                 if form.image.data:
-                    image_address = utils.save_upload_file("assets", form.image.data)
+                    image_address = utils.save_upload_file(form.image.data)
                 else:
                     image_address = asset_type.image if asset_type else None
 
@@ -152,12 +196,14 @@ def edit_type(type_id=0):
 
 
 @bp.get("/types")
+@role_required(Roles.ASSET_MANAGER)
 def types():
     data = AssetType.query.all()
     return render_template("types_list.html", data=data)
 
 
 @bp.delete("/types/<int:type_id>")
+@role_required(Roles.ASSET_MANAGER)
 def delete_type(type_id: int):
     atype = db.get_or_404(AssetType, type_id)
     if len(atype.assets):
@@ -170,6 +216,7 @@ def delete_type(type_id: int):
 
 
 @bp.route("/<int:asset_id>", methods=["GET", "POST"])
+@role_required(Roles.ASSET_MANAGER)
 def edit(asset_id=0, type_id=0):
     asset = Asset.query.filter_by(id=asset_id).one_or_none()
     types = AssetType.query.all()
@@ -203,8 +250,9 @@ def edit(asset_id=0, type_id=0):
                 if not form.image.data:
                     image_address = asset.image if asset else None
                 else:
-                    image_address = utils.save_upload_file("assets", form.image.data)
+                    image_address = utils.save_upload_file(form.image.data)
 
+                form.image.data = image_address
                 asset.name = form.name.data
                 asset.type_id = form.type_id.data
                 asset.address = form.address.data

@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 
-from app.users.models import User, UserStatus, Role, Department
+from app.users.models import User, UserStatus, Role, Department, Roles
 
 
 def create_initial_objects(db: SQLAlchemy):
@@ -9,10 +9,10 @@ def create_initial_objects(db: SQLAlchemy):
         return
 
     roles = [
-        Role(name="Менеджер асетов"),
-        Role(name="Исполнитель"),
-        Role(name="Руководитель"),
-        Role(name="Менеджер по персоналу")
+        Role(name=Roles.ASSET_MANAGER.value),
+        Role(name=Roles.WORKER.value),
+        Role(name=Roles.DIRECTOR.value),
+        Role(name=Roles.USER_MANAGER.value)
     ]
     db.session.add_all(roles)
 

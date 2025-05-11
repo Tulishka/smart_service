@@ -24,6 +24,9 @@ class AssetType(db.Model):
     assets = db.relationship("Asset", back_populates="type")
     options = db.relationship("AssetTypeOption", back_populates="asset_type")
 
+    def __str__(self):
+        return f"{self.name}"
+
 
 class Asset(db.Model):
     __tablename__ = "assets"
@@ -40,6 +43,9 @@ class Asset(db.Model):
     type = db.relationship("AssetType", back_populates="assets")
     tickets = db.relationship("Ticket", back_populates="asset")
 
+    def __str__(self):
+        return f"{self.name}"
+
 
 class AssetTypeOption(db.Model):
     __tablename__ = "asset_type_options"
@@ -55,3 +61,6 @@ class AssetTypeOption(db.Model):
 
     asset_type = db.relationship("AssetType", back_populates="options")
     department = db.relationship("Department", back_populates="asset_type_options")
+
+    def __str__(self):
+        return f"{self.title}"
