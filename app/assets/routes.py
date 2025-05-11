@@ -27,14 +27,26 @@ def index():
     types_variations = [type_.name for type_ in AssetType.query.all()]
 
     if "type" in args:
-        type_id = int(args["type"])
-        assets = [asset for asset in assets if type_id == asset.type_id]
+        try:
+            type_id = int(args["type"])
+            assets = [asset for asset in assets if type_id == asset.type_id]
+            if not assets:
+                raise Exception("there were no assets with this id")
+        except Exception as ex:
+            flash(F"Ошибка при обработке параметра type. Проверьте корректность запроса | {ex}",
+                  category="danger")
+            return redirect(url_for("assets.index"))
 
     if "status" in args:
-        statuses = {0: "ACTIVE", 1: "INACTIVE", 2: "MAINTENANCE"}
-        status = statuses[int(args["status"])]
-
-        assets = [asset for asset in assets if status == asset.status.name]
+        try:
+            status_id = int(args["status"])
+            statuses = {0: "ACTIVE", 1: "INACTIVE", 2: "MAINTENANCE"}
+            status = statuses[status_id]
+            assets = [asset for asset in assets if status == asset.status.name]
+        except Exception as ex:
+            flash(F"Ошибка при обработке параметра status. Проверьте корректность запроса | {ex}",
+                  category="danger")
+            return redirect(url_for("assets.index"))
 
     return render_template("assets_list.html",
                            assets=assets,
