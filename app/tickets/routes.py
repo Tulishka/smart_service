@@ -27,7 +27,7 @@ def ticket_list():
             asset_uid = str(args["asset"])
             query = query.filter(Ticket.asset.has(uid=uuid.UUID(asset_uid)))
         except Exception as ex:
-            flash(F"Не удалось обработать параметр асета | {ex}")
+            flash(F"Не удалось обработать параметр асета | {ex}", category="danger")
             return redirect(url_for("tickets.ticket_list"))
 
     if "department" in args:
@@ -36,14 +36,15 @@ def ticket_list():
             query = query.filter(Ticket.department_id == department_id)
         except Exception as ex:
             flash(F"Не удалось обработать параметр отдела | {ex}")
-            return redirect(url_for("tickets.tickets.list"))
+            return redirect(url_for("tickets.ticket_list"))
 
     if "operator" in args:
         try:
             operator_auid = args["operator"]
             query = query.filter(Ticket.assignee.has(auid=uuid.UUID(operator_auid)))
         except Exception as ex:
-            flash(F"Не удалось обработать параметр исполнителя | {ex}")
+            flash(F"Не удалось обработать параметр исполнителя | {ex}", category="danger")
+            return redirect(url_for("tickets.ticket_list"))
 
     if "status" in args:
         try:
@@ -54,7 +55,8 @@ def ticket_list():
 
             query = query.filter(Ticket.status == status)
         except Exception as ex:
-            flash(F"Не удалось обработать параметр статуса | {ex}")
+            flash(F"Не удалось обработать параметр статуса | {ex}", category="danger")
+            return redirect(url_for("tickets.ticket_list"))
 
     if "result" in args:
         try:
@@ -65,7 +67,8 @@ def ticket_list():
 
             query = query.filter(Ticket.result == result)
         except Exception as ex:
-            flash(F"Не удалось обработать параметр результата | {ex}")
+            flash(F"Не удалось обработать параметр результата | {ex}", category="danger")
+            return redirect(url_for("tickets.ticket_list"))
 
     try:
         tickets = query.all()
