@@ -159,10 +159,12 @@ def asset_detail(asset_uid):
             status=TicketStatus.OPENED,
             result=TicketResults.NEW,
             option_id=selected_option_id,
+            description=form.description.data,
             department_id=dep_id
         )
         db.session.add(ticket)
         db.session.commit()
+        flash(f"Заявка успешно создана!","success")
         return redirect(url_for('tickets.asset_detail', asset_uid=asset_uid))
 
     return render_template(
