@@ -133,7 +133,7 @@ def edit(ticket_id):
 
 
 @bp.route("/new/<asset_uid>", methods=["GET", "POST"])
-@role_required(Roles.WORKER)
+@login_required
 def asset_detail(asset_uid):
     asset = Asset.query.filter_by(uid=uuid.UUID(asset_uid)).one_or_none()
     if not asset:
