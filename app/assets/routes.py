@@ -33,8 +33,6 @@ def index():
     if "status" in args:
         statuses = {0: "ACTIVE", 1: "INACTIVE", 2: "MAINTENANCE"}
         status = statuses[int(args["status"])]
-        for asset in assets:
-            print(asset.status.name)
 
         assets = [asset for asset in assets if status == asset.status.name]
 
