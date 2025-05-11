@@ -9,10 +9,10 @@ def create_initial_objects(db: SQLAlchemy):
         return
 
     roles = [
-        Role(name=Roles.ASSET_MANAGER),
-        Role(name=Roles.WORKER),
-        Role(name=Roles.DIRECTOR),
-        Role(name=Roles.USER_MANAGER)
+        Role(name=Roles.ASSET_MANAGER.value),
+        Role(name=Roles.WORKER.value),
+        Role(name=Roles.DIRECTOR.value),
+        Role(name=Roles.USER_MANAGER.value)
     ]
     db.session.add_all(roles)
 
