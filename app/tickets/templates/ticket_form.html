@@ -83,11 +83,11 @@
                       {% endif %}
                     </span>
                     {% if not ticket.assignee %}
-                    <button type="submit" name="action" value="take" class="btn btn-success btn-sm">
+                    <button type="submit" name="action" value="take" class="btn btn-success btn-sm" {% if ticket.is_closed %}disabled="disabled"{% endif %}>
                       Взять заявку
                     </button>
                     {% elif current_user.id == ticket.assignee.id %}
-                    <button type="submit" name="action" value="release" class="btn btn-danger btn-sm">
+                    <button type="submit" name="action" value="release" class="btn btn-danger btn-sm" {% if ticket.is_closed %}disabled="disabled"{% endif %}>
                       Отказаться
                     </button>
                     {% endif %}
@@ -106,7 +106,8 @@
                 </div>
               </div>
 
-              <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+              <div class="d-grid gap-2 d-md-flex justify-content-between">
+                  <a class="btn btn-secondary" href="{{ url_for("tickets.ticket_list") }}">Перейти к списку заявок</a>
                 <button type="submit" class="btn btn-primary">Сохранить изменения</button>
               </div>
             </form>
