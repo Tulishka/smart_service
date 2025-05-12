@@ -1,7 +1,6 @@
 import json
 import os
 import secrets
-import uuid
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -17,7 +16,11 @@ class Config(object):
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     APP_HOST = os.environ.get("APP_HOST", "http://127.0.0.1:5000")
     MEDIA_FOLDER = "media"
-    USERS_API_KEYS = set(json.loads(os.environ.get("USERS_API_KEYS", f"[{secrets.token_urlsafe(64)}]")))
+    try:
+        USERS_API_KEYS = set(json.loads(os.environ.get("USERS_API_KEYS", f"['{secrets.token_urlsafe(64)}']")))
+    except ValueError:
+        print("USERS_API_KEYS read error")
+        USERS_API_KEYS = {secrets.token_urlsafe(64)}
 
 
 class ProductionConfig(Config):
