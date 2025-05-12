@@ -3,6 +3,7 @@ from datetime import datetime
 from sqlalchemy import select, func, case, and_, between
 
 from app import db
+from app.assets.models import Asset, AssetType
 from app.tickets.models import Ticket, TicketResults, TicketStatus
 from app.users.models import User, Department
 
@@ -11,6 +12,12 @@ class Report:
     id: str = ""
     name: str = ""
     columns: list[str] = None
+    all_reports = {}
+
+    def __init_subclass__(cls, **kwargs):
+        if cls.id:
+            print("Отчет подключен", cls)
+            Report.all_reports[cls.id] = cls
 
     def __init__(self):
         self.columns = self.columns or []
@@ -28,8 +35,11 @@ class TicketsGroupedReport(Report):
         super().__init__()
         self.columns = [
             self.group_title, "Всего заявок", "Выполнено", "Провалено", "Отменено",
-            "Ср. Время"
+            "Ср. Время (мин.)"
         ]
+
+    def more_joins(self, query):
+        return query
 
     def calculate(self, params: dict) -> list[list[str]]:
 
@@ -54,16 +64,21 @@ class TicketsGroupedReport(Report):
                 func.sum(
                     case((Ticket.result == TicketResults.CANCELED, 1), else_=0)
                 ),
-                func.avg(
-                    func.extract('epoch', Ticket.closed - Ticket.take_time) / 3600
-                )
+                func.round(
+                    func.avg(
+                        func.extract('epoch', Ticket.closed - Ticket.take_time) / 60
+                    )
+                    , 2)
             )
             .select_from(Ticket)
-            .join(self.__class__.group_join)
+            .join(type(self).group_join)
+        )
+        query = (
+            self.more_joins(query)
             .where(
                 and_(
                     Ticket.status == TicketStatus.CLOSED,
-                    between(Ticket.closed, period_from, period_to),
+                    between(Ticket.created, period_from, period_to),
                     Ticket.take_time.isnot(None),
                     Ticket.closed.isnot(None)
                 )
@@ -71,7 +86,6 @@ class TicketsGroupedReport(Report):
             .group_by(self.group_model.name)
             .order_by(self.group_model.name)
         )
-
         return db.session.execute(query).all()
 
 
@@ -89,3 +103,22 @@ class DepartmentTicketsReport(TicketsGroupedReport):
     group_title = "Отдел"
     group_model = Department
     group_join = Ticket.department
+
+
+class AssetTypeTicketsReport(TicketsGroupedReport):
+    id = "by_asset_type"
+    name = "По видам асетов"
+    group_title = "Вид асета"
+    group_model = AssetType
+    group_join = Ticket.asset
+
+    def more_joins(self, query):
+        return super().more_joins(query).join(Asset.type)
+
+
+class CreatorTicketsReport(TicketsGroupedReport):
+    id = "by_creator"
+    name = "По создателю"
+    group_title = "Создатель"
+    group_model = User
+    group_join = Ticket.creator
