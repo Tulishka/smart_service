@@ -32,5 +32,9 @@
   {% endfor %}
   </tbody>
 </table>
-
+{% if report_description %}
+    <p class="text-muted">
+        {{ report_description }}
+    </p>
+{% endif %}
 {% endblock %}
