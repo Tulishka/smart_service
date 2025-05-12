@@ -43,6 +43,9 @@ class Ticket(db.Model):
     comments = db.relationship("TicketComment", back_populates="ticket")
     option = db.relationship("AssetTypeOption")
 
+    @property
+    def is_closed(self):
+        return self.status == TicketStatus.CLOSED
 
 class TicketComment(db.Model):
     __tablename__ = 'ticket_comments'
