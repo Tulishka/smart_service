@@ -1,14 +1,15 @@
 import uuid
 from collections import defaultdict
+from datetime import datetime
 
 from flask import Blueprint, render_template, redirect, url_for, abort, request, flash
 from flask_login import current_user, login_required
 
 from app import db
-from app.assets.models import Asset, AssetTypeOption, AssetType
-from app.tickets.forms import OptionForm, TicketForm
+from app.assets.models import Asset, AssetTypeOption
+from app.tickets.forms import OptionForm, OpenTicketForm, ClosedTicketForm
 from app.tickets.models import Ticket, TicketStatus, TicketResults
-from app.users.models import Department, User, Role, Roles
+from app.users.models import Department, User, Roles
 from app.users.utils import role_required
 
 bp = Blueprint('tickets', __name__, url_prefix='/tickets', template_folder="templates")
@@ -90,41 +91,70 @@ def ticket_list():
 @role_required(Roles.WORKER)
 def edit(ticket_id):
     ticket = db.get_or_404(Ticket, ticket_id)
-    form = TicketForm()
-
-    form.department.choices = [(d.id, d.name) for d in Department.query.all()]
+    if not ticket.is_closed or request.method == "GET":
+        form = OpenTicketForm()
+        form.department.choices = [(d.id, d.name) for d in Department.query.all()]
+        dep = ticket.department_id
+    else:
+        form = ClosedTicketForm()
+        dep = ticket.department.name
 
     if request.method == 'GET':
-        form.department.data = ticket.department_id
+        form.department.data = dep
         form.status.data = ticket.status.value
         form.result.data = ticket.result.value
 
     if form.validate_on_submit():
-        ticket.department_id = form.department.data
-        ticket.status = TicketStatus(form.status.data)
-        ticket.result = TicketResults(form.result.data)
 
         message = "Изменения сохранены", "success"
         action = form.submit.data
-        if action == "take":
-            if ticket.assignee_id is None:
-                ticket.assignee_id = current_user.id
-                message = "Вы теперь исполнитель!", "success"
-            else:
-                message = "Эта заявка уже занята!", "danger"
-        elif action == "release":
-            if ticket.assignee_id == current_user.id:
-                ticket.assignee_id = None
-                message = "Вы отказались от заявки!", "success"
-            else:
-                message = "Эта заявка итак свободна", "danger"
+        if ticket.status == TicketStatus.OPENED:
+            if action == "take":
+                if ticket.assignee_id is None:
+                    ticket.assignee_id = current_user.id
+                    ticket.take_time = datetime.now()
+                    message = "Вы теперь исполнитель!", "success"
+                else:
+                    message = "Эта заявка уже занята!", "danger"
+            elif action == "release":
+                if ticket.assignee_id == current_user.id:
+                    ticket.assignee_id = None
+                    ticket.take_time = None
+                    message = "Вы отказались от заявки!", "success"
+                else:
+                    message = "Эта заявка итак свободна", "danger"
 
-        db.session.commit()
+            ticket.result = TicketResults(form.result.data)
+            ticket.department_id = form.department.data
+
+        new_status = TicketStatus(form.status.data)
+
+        if new_status != ticket.status:
+            ticket.status = new_status
+            message = f"Статус заявки изменен на '{ticket.status.value}'", "success"
+
+            if new_status == TicketStatus.OPENED:
+                ticket.closed = None
+            else:
+                ticket.closed = datetime.now()
+                if ticket.result not in (TicketResults.CANCELED, TicketResults.DONE, TicketResults.FAIL):
+                    message = (
+                        f"Заявку можно закрыть только в статусах: "
+                        f"{TicketResults.CANCELED.value, TicketResults.DONE.value, TicketResults.FAIL.value}",
+                        "danger"
+                    )
+
+        if message[1] == "success":
+            db.session.add(ticket)
+            db.session.commit()
+
         flash(*message)
-        if action:
-            return redirect(url_for('tickets.edit', ticket_id=ticket_id))
-        else:
-            return redirect(url_for('tickets.ticket_list'))
+        return redirect(url_for('tickets.edit', ticket_id=ticket_id))
+
+    if ticket.is_closed:
+        print("disable")
+        form.department.render_kw = {'disabled': 'disabled'}
+        form.result.render_kw = {'disabled': 'disabled'}
 
     return render_template("ticket_form.html",
                            ticket=ticket,
