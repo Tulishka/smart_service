@@ -152,7 +152,6 @@ def edit(ticket_id):
         return redirect(url_for('tickets.edit', ticket_id=ticket_id))
 
     if ticket.is_closed:
-        print("disable")
         form.department.render_kw = {'disabled': 'disabled'}
         form.result.render_kw = {'disabled': 'disabled'}
 
