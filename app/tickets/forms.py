@@ -20,12 +20,19 @@ class OptionForm(FlaskForm):
     submit = SubmitField('Создать заявку')
 
 
-class TicketForm(FlaskForm):
-    department = SelectField('Отдел', coerce=int, validators=[DataRequired()])
+class OpenTicketForm(FlaskForm):
+    department = SelectField('Отдел', coerce=int)
     status = SelectField('Статус',
-                         choices=[(status.value, status.value) for status in TicketStatus],
-                         validators=[DataRequired()])
+                         choices=[(status.value, status.value) for status in TicketStatus])
     result = SelectField('Результат',
-                         choices=[(result.value, result.value) for result in TicketResults],
-                         validators=[DataRequired()])
+                         choices=[(result.value, result.value) for result in TicketResults])
     submit = StringField('Взять/отказаться', name="action")
+
+
+class ClosedTicketForm(FlaskForm):
+    department = StringField('Отдел')
+
+    status = SelectField('Статус',
+                         choices=[(status.value, status.value) for status in TicketStatus])
+    result = StringField('Результат')
+    submit = StringField('Изменить статус', name="action")
