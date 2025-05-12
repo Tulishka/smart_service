@@ -7,11 +7,20 @@
     {% if report.id == active_report.id %}
         <a class="nav-link active disabled">{{ report.name }}</a>
     {% else %}
-        <a class="nav-link" href="{{ url_for("reports.index", report_id=report.id) }}">{{ report.name }}</a>
+        <a class="nav-link" href="{{ url_for("reports.index", report_id=report.id, period=period) }}">{{ report.name }}</a>
     </li>
     {% endif %}
   {% endfor %}
   </ul>
+
+    {% if periods %}
+    <div class="btn-group mb-3" role="group">
+    {% for id, (name,_) in periods.items() %}
+      <a href="{{ url_for('reports.index', report_id=report_id, period=id) }}" class="btn btn-{% if id == period %}{% else %}outline-{% endif %}primary btn-sm">{{ name }}</a>
+    {% endfor %}
+    </div>
+    {% endif %}
+
 <table class="table">
   <thead>
   <tr>
@@ -26,7 +35,7 @@
   <tr>
     <th scope="row">{{ loop.index }}</th>
   {% for value in row %}
-    <th scope="col">{{ value }}</th>
+    <td>{{ value }}</td>
   {% endfor %}
   </tr>
   {% endfor %}
@@ -34,7 +43,7 @@
 </table>
 {% if report_description %}
     <p class="text-muted">
-        {{ report_description }}
+        {{ report_description|safe }}
     </p>
 {% endif %}
 {% endblock %}
