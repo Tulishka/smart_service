@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <ul class="nav nav-underline mb-3">
+  {% for report in all_reports %}
+    <li class="nav-item">
+    {% if report.id == active_report.id %}
+        <a class="nav-link active disabled">{{ report.name }}</a>
+    {% else %}
+        <a class="nav-link" href="{{ url_for("reports.index", report_id=report.id) }}">{{ report.name }}</a>
+    </li>
+    {% endif %}
+  {% endfor %}
+  </ul>
+<table class="table">
+  <thead>
+  <tr>
+    <th scope="col">#</th>
+  {% for column_name in active_report.columns %}
+    <th scope="col">{{ column_name }}</th>
+  {% endfor %}
+  </tr>
+  </thead>
+  <tbody>
+  {% for row in report_data %}
+  <tr>
+    <th scope="row">{{ loop.index }}</th>
+  {% for value in row %}
+    <th scope="col">{{ value }}</th>
+  {% endfor %}
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% if report_description %}
+    <p class="text-muted">
+        {{ report_description }}
+    </p>
+{% endif %}
+{% endblock %}
