@@ -1,23 +1,25 @@
 import json
-import os
 import uuid
 
 from flask import Blueprint, render_template, request, flash, url_for, redirect
 from markupsafe import Markup
 
 from app import db
-from app.config import Config
 from app.assets.forms import AssetTypeForm, AssetForm
 from app.assets.models import AssetType, AssetTypeOption, Asset, AssetStatus
-from app.core import utils
-from app.users.models import Department, Roles
 from app.assets.qr import create_qr_if_need
+from app.config import Config
+from app.core import utils
+from app.core.filter_utils import apply_filter
+from app.users.models import Department, Roles
 from app.users.utils import role_required
 
 bp = Blueprint("assets", __name__, url_prefix="/assets", template_folder="templates")
 
-os.makedirs(f"app/{Config.MEDIA_FOLDER}/uploads", exist_ok=True)
-os.makedirs(f"app/{Config.MEDIA_FOLDER}/qr", exist_ok=True)
+ASSET_FILTERS = {
+    "type": lambda value: Asset.type_id == int(value),
+    "status": lambda value: Asset.status == ["ACTIVE", "INACTIVE", "MAINTENANCE"][int(value)],
+}
 
 
 @bp.route("/")
@@ -26,40 +28,21 @@ def index():
     args = request.args.to_dict()
 
     query = Asset.query
-    types_variations = [type_.name for type_ in AssetType.query.all()]
+    types_variations = [(type_.id, type_.name) for type_ in AssetType.query.all()]
 
-    if "type" in args:
-        try:
-            type_id = int(args["type"])
-            query = query.filter(Asset.type_id == type_id)
-            if not query:
-                raise Exception("there were no assets with this id")
-        except Exception as ex:
-            flash(F"Ошибка при обработке параметра type. Проверьте корректность запроса | {ex}",
-                  category="danger")
-            return redirect(url_for("assets.index"))
-
-    if "status" in args:
-        try:
-            status_id = int(args["status"])
-            statuses = {0: "ACTIVE", 1: "INACTIVE", 2: "MAINTENANCE"}
-            status = statuses[status_id]
-            query = query.filter(Asset.status == status)
-        except Exception as ex:
-            flash(F"Ошибка при обработке параметра status. Проверьте корректность запроса | {ex}",
-                  category="danger")
-            return redirect(url_for("assets.index"))
-
+    assets = []
     try:
-        assets = query.all()
-    except Exception as ex:
-        flash(F"Не удалось осуществить запрос к БД. | {ex}",
-              category="danger")
-        assets = []
+        assets = apply_filter(query, ASSET_FILTERS, args).all()
+    except ValueError as e:
+        flash(str(e), "danger")
+    except Exception:
+        flash(f"Не удалось осуществить запрос с текущими параметрами", "danger")
 
-    return render_template("assets_list.html",
-                           assets=assets,
-                           types_var=types_variations)
+    return render_template(
+        "assets_list.html",
+        assets=assets,
+        types_var=types_variations
+    )
 
 
 @bp.route("/codes")

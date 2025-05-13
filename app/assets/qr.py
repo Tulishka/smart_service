@@ -2,6 +2,7 @@ import qrcode
 from app.config import Config
 import os
 
+os.makedirs(f"app/{Config.MEDIA_FOLDER}/qr", exist_ok=True)
 
 def create_qr_if_need(asset_uid):
     if os.path.exists(f"{Config.MEDIA_FOLDER}/qr"):
