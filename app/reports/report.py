@@ -51,24 +51,20 @@ class TicketsGroupedReport(Report):
         if isinstance(period_to, str):
             period_to = datetime.fromisoformat(period_to)
 
+        if db.engine.dialect.name == 'postgresql':
+            time_expr = func.extract('epoch', Ticket.closed - Ticket.take_time) / 60
+        else:
+            # SQLite
+            time_expr = (func.julianday(Ticket.closed) - func.julianday(Ticket.take_time)) * 24 * 60
+
         query = (
             select(
                 self.group_model.name.label("0"),
                 func.count(Ticket.id).label("1"),
-                func.sum(
-                    case((Ticket.result == TicketResults.DONE, 1), else_=0)
-                ).label("2"),
-                func.sum(
-                    case((Ticket.result == TicketResults.FAIL, 1), else_=0)
-                ).label("3"),
-                func.sum(
-                    case((Ticket.result == TicketResults.CANCELED, 1), else_=0)
-                ).label("4"),
-                func.round(
-                    func.avg(
-                        func.extract('epoch', Ticket.closed - Ticket.take_time) / 60
-                    )
-                    , 2).label("5")
+                func.sum(case((Ticket.result == TicketResults.DONE, 1), else_=0)).label("2"),
+                func.sum(case((Ticket.result == TicketResults.FAIL, 1), else_=0)).label("3"),
+                func.sum(case((Ticket.result == TicketResults.CANCELED, 1), else_=0)).label("4"),
+                func.round(func.avg(time_expr), 2).label("5")
             )
             .select_from(Ticket)
             .join(type(self).group_join)
