@@ -148,7 +148,7 @@ class UsersResource(Resource):
         :return: Уведомление об успешном изменении пользователя/ошибке
         """
 
-        # Получение пользователя и аргументов, на которые есть необходимость изменить существующие
+        # Получение пользователя и аргументов, на которые есть необходимость изменить данные пользователя
         user = user_or_404(user_id, get_user_obj=True)
         args = unrequired_parser.parser.parse_args()
 
@@ -190,6 +190,8 @@ class UsersListResource(Resource):
 
         :return: Id только что добавлено пользователя в случае успешного добавления / ошибку
         """
+
+        # Получение аргументов, фигурирующих в объекте пользователя, которого нужно добавить
         args = standart_parser.parser.parse_args()
         abort_if_user_exists(args["phone"])
 
