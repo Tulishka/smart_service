@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from sqlalchemy import select, func, case, and_, between
+from sqlalchemy import select, func, case, and_, between, text
 
 from app import db
 from app.assets.models import Asset, AssetType
@@ -22,7 +22,7 @@ class Report:
     def __init__(self):
         self.columns = self.columns or []
 
-    def calculate(self, params: dict) -> list[list[str]]:
+    def calculate(self, params: dict, sort_by: str = "") -> list[list[str]]:
         return []
 
 
@@ -41,7 +41,7 @@ class TicketsGroupedReport(Report):
     def more_joins(self, query):
         return query
 
-    def calculate(self, params: dict) -> list[list[str]]:
+    def calculate(self, params: dict, sort_by: str = "") -> list[list[str]]:
 
         period_from = params.get("period_from")
         period_to = params.get("period_to")
@@ -59,12 +59,12 @@ class TicketsGroupedReport(Report):
 
         query = (
             select(
-                self.group_model.name,
-                func.count(Ticket.id),
-                func.sum(case((Ticket.result == TicketResults.DONE, 1), else_=0)),
-                func.sum(case((Ticket.result == TicketResults.FAIL, 1), else_=0)),
-                func.sum(case((Ticket.result == TicketResults.CANCELED, 1), else_=0)),
-                func.round(func.avg(time_expr), 2)
+                self.group_model.name.label("0"),
+                func.count(Ticket.id).label("1"),
+                func.sum(case((Ticket.result == TicketResults.DONE, 1), else_=0)).label("2"),
+                func.sum(case((Ticket.result == TicketResults.FAIL, 1), else_=0)).label("3"),
+                func.sum(case((Ticket.result == TicketResults.CANCELED, 1), else_=0)).label("4"),
+                func.round(func.avg(time_expr), 2).label("5")
             )
             .select_from(Ticket)
             .join(type(self).group_join)
@@ -73,14 +73,11 @@ class TicketsGroupedReport(Report):
             self.more_joins(query)
             .where(
                 and_(
-                    Ticket.status == TicketStatus.CLOSED,
-                    between(Ticket.created, period_from, period_to),
-                    Ticket.take_time.isnot(None),
-                    Ticket.closed.isnot(None)
+                    between(Ticket.created, period_from, period_to)
                 )
             )
             .group_by(self.group_model.name)
-            .order_by(self.group_model.name)
+            .order_by(text(sort_by or '"0"'))
         )
         return db.session.execute(query).all()
 

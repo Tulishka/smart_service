@@ -21,7 +21,7 @@
     <select id="department">
         <option value="all">ЛЮБОЙ</option>
         {% for department in departments%}
-          <option value="{{ loop.index }}">{{ department }}</option>
+          <option value="{{ department[0] }}">{{ department[1] }}</option>
         {% endfor %}
     </select>
     </th>
