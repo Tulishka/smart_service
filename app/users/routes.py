@@ -27,26 +27,32 @@ def edit(user):
             name=user.name,
             status=user.status.value,
         )
-        form.roles.choices = [(role.id, role.name) for role in all_roles]
+        form.department.data = user.department_id
     else:
         form = UserForm()
-        form.roles.choices = [(role.id, role.name) for role in all_roles]
 
-        if form.validate_on_submit():
-            if User.query.filter((User.phone == form.phone.data) & (User.id != user.id)).first():
-                form.phone.errors = ("Пользователь с таким номером уже существует",)
+    form.roles.choices = [(role.id, role.name) for role in all_roles]
+    form.department.choices = [(0, "(НЕ НАЗНАЧЕН)")] + [(d.id, d.name) for d in Department.query.all()]
+
+    if form.validate_on_submit():
+        if User.query.filter((User.phone == form.phone.data) & (User.id != user.id)).first():
+            form.phone.errors = ("Пользователь с таким номером уже существует",)
+        else:
+            user.name = form.name.data
+            user.phone = form.phone.data
+            if form.department.data:
+                user.department_id = form.department.data
             else:
-                user.name = form.name.data
-                user.phone = form.phone.data
-                user.status = UserStatus(form.status.data)
+                user.department_id = None
+            user.status = UserStatus(form.status.data)
 
-                selected_roles = Role.query.filter(Role.id.in_(form.roles.data)).all()
-                user.roles = selected_roles
+            selected_roles = Role.query.filter(Role.id.in_(form.roles.data)).all()
+            user.roles = selected_roles
 
-                db.session.add(user)
-                db.session.commit()
-                flash(f"Пользователь {user.name} изменен", category="info")
-                return redirect(url_for("users.user_list"))
+            db.session.add(user)
+            db.session.commit()
+            flash(f"Пользователь {user.name} изменен", category="info")
+            return redirect(url_for("users.user_list"))
 
     form.roles.data = [role.id for role in user.roles]
     return render_template("user_form.html", form=form)
