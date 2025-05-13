@@ -1,3 +1,13 @@
+"""
+Модуль, включающий в себя обработчики страниц, связанные с асетами
+
+Представлены обработчики:
+- /login: Авторизация
+- /register: Регистрация
+- /logout: Выход из системы
+"""
+
+
 from flask import Blueprint, request, redirect, render_template, url_for, flash
 from flask_login import login_user, current_user, logout_user
 

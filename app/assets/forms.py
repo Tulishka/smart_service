@@ -1,3 +1,12 @@
+"""
+Модуль с формами, связанными с асетами.
+
+Содержит классы:
+- AssetTypeForm Форма для вида асетов
+- AssetForm Форма для асета
+"""
+
+
 import wtforms.fields.simple as field
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed
@@ -5,11 +14,15 @@ from wtforms import StringField, SelectField, SubmitField
 from wtforms.fields.simple import TextAreaField
 from wtforms.validators import DataRequired, Length, Optional
 
+import app.database.model_const as mc
 from .models import AssetStatus
 
-import app.database.model_const as mc
 
 class AssetTypeForm(FlaskForm):
+    """Форма для вида асета.
+
+    Содержимое каждого поля своответствует своему названию
+    """
     name = field.StringField("Название", validators=[DataRequired()])
     description = field.TextAreaField("Описание", validators=[DataRequired()])
     image = field.FileField("Картинка (jpg/png)", validators=[FileAllowed(['jpg', 'png'])])
@@ -18,6 +31,10 @@ class AssetTypeForm(FlaskForm):
 
 
 class AssetForm(FlaskForm):
+    """Форма для конкретного асета.
+
+    Содержимое каждого поля своответствует своему названию
+    """
     name = StringField(
         'Название',
         validators=[

@@ -1,18 +1,37 @@
+"""
+Модуль с моделями базы данных, связанными с асетами.
+
+Содержит классы:
+- AssetStatus: Класс-статус для асетов
+- AssetType: Модель вида асетов
+- Asset: Модель самого асета
+- AssetTypeOption Модель опций вида асетов
+"""
+
+
 from enum import Enum as PyEnum
 
 from sqlalchemy import Integer, String, Column, ForeignKey, Enum, Uuid
 
-from app.database import model_const as mc
 from app import db
+from app.database import model_const as mc
 
 
 class AssetStatus(PyEnum):
+    """Класс-статус для асетов
+
+    Содержит непосредственно статусы, которые могут быть присвоены асету
+    """
     ACTIVE = "ДОСТУПНО"
     INACTIVE = "НЕ ДОСТУПНО"
     MAINTENANCE = "НА ОБСЛУЖИВАНИИ"
 
 
 class AssetType(db.Model):
+    """Класс-модель вида асетов
+
+    Отвечает за создание видов асетов и взаимодействие с ними в базе данных
+    """
     __tablename__ = "asset_types"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -25,10 +44,19 @@ class AssetType(db.Model):
     options = db.relationship("AssetTypeOption", back_populates="asset_type")
 
     def __str__(self):
+        """
+        Функция, возвращающая преобразованный в строку объект вида асетов
+
+        :return: Строковое значение названия вида асета
+        """
         return f"{self.name}"
 
 
 class Asset(db.Model):
+    """Класс-модель асетов
+
+    Отвечает за создание асетов и взаимодействие с ними в базе данных
+    """
     __tablename__ = "assets"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -44,10 +72,19 @@ class Asset(db.Model):
     tickets = db.relationship("Ticket", back_populates="asset")
 
     def __str__(self):
+        """
+        Функция, возвращающая преобразованный в строку объект асета
+
+        :return: Строковое значение названия асета
+        """
         return f"{self.name}"
 
 
 class AssetTypeOption(db.Model):
+    """Класс-модель опций вида асетов
+
+    Отвечает за создание опций вида асетов и взаимодействие с ними в базе данных
+    """
     __tablename__ = "asset_type_options"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -63,4 +100,9 @@ class AssetTypeOption(db.Model):
     department = db.relationship("Department", back_populates="asset_type_options")
 
     def __str__(self):
+        """
+        Функция, возвращающая преобразованный в строку объект опции
+
+        :return: Строковое значение названия опции
+        """
         return f"{self.title}"
