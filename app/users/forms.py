@@ -10,6 +10,7 @@ from app.users.models import UserStatus
 class UserForm(FlaskForm):
     phone = field.TelField("Номер телефона", validators=[DataRequired()])
     name = field.StringField("Имя", validators=[DataRequired()])
+    department = choices.SelectField('Отдел', coerce=int)
     status = choices.SelectField("Статус", validators=[DataRequired()], choices=[UserStatus.ACTIVE.value, UserStatus.INACTIVE.value])
     roles = SelectMultipleField("Роли",
                               choices=[],
