@@ -24,7 +24,7 @@
         <select id="types">
           <option value="all" selected>ВСЕ ВИДЫ</option>
           {% for type in types_var %}
-            <option value="{{ loop.index }}">{{ type }}</option>
+            <option value="{{ type[0] }}">{{ type[1] }}</option>
           {% endfor %}
         </select>
       </th>
