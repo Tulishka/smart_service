@@ -11,7 +11,11 @@ bp = Blueprint("auth", __name__, url_prefix="/", template_folder="templates")
 
 @bp.route("login", methods=["GET", "POST"])
 def login():
-    redirect_url = request.args.get("next") or url_for("main.index")
+    args = request.args.to_dict()
+    redirect_url = args.get("next") or url_for("main.index")
+
+    if args.get("show_help", None) == "1":
+        flash("Для изменения пароля обратитесь к админинстратору", category="info")
 
     # Если пользователь уже вошел, перенаправляем далее сразу
     if current_user is not None and current_user.is_authenticated:

@@ -6,7 +6,7 @@
 
 {% block form_footer %}
     <div class="d-flex justify-content-between m-2">
-        <a href="#" class="text-light">Не помню пароль</a>
+        <a href="{{ url_for('auth.login', show_help=['1']) }}" class="text-light">Не помню пароль</a>
         <a href="{{ url_for('auth.register', next=request.args.get('next')) }}" class="text-light">Регистрация</a>
     </div>
 {% endblock %}
