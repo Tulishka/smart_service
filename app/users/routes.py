@@ -11,6 +11,10 @@ bp = Blueprint("users", __name__, url_prefix="/users", template_folder="template
 @bp.route("/", methods=["GET"])
 @role_required(Roles.USER_MANAGER)
 def user_list():
+    """Отображает список всех пользователей системы
+
+    :returns: страница со списком пользователей
+    """
     users = db.session.query(User).all()
     return render_template("user_list.html", users=users)
 
@@ -18,6 +22,11 @@ def user_list():
 @bp.route("/<int:user>", methods=["GET", "POST"])
 @role_required(Roles.USER_MANAGER)
 def edit(user):
+    """Редактирование данных пользователя
+
+    :param user: ID пользователя
+    :returns: страница редактирования или редирект на список
+    """
     user = db.get_or_404(User, user)
     all_roles = Role.query.all()
 
@@ -61,6 +70,10 @@ def edit(user):
 @bp.route("/departments", methods=["GET"])
 @role_required(Roles.USER_MANAGER)
 def department_list():
+    """Отображает список всех отделов
+
+    :returns: страница со списком отделов
+    """
     departments = db.session.query(Department).all()
     return render_template("department_list.html", departments=departments)
 
@@ -68,6 +81,11 @@ def department_list():
 @bp.route("/departments/<int:department_id>", methods=["GET", "POST"])
 @role_required(Roles.USER_MANAGER)
 def department(department_id=0):
+    """Создание/редактирование отдела
+
+    :param department_id: ID отдела (0 для создания нового)
+    :returns: форма отдела или редирект на список
+    """
     department = Department.query.filter_by(id=department_id).one_or_none()
     if not department:
         department = Department()
@@ -93,6 +111,11 @@ def department(department_id=0):
 @bp.delete("/departments/<int:department_id>")
 @role_required(Roles.USER_MANAGER)
 def delete_department(department_id: int):
+    """Удаление отдела
+
+    :param department_id: ID удаляемого отдела
+    :returns: Пустой ответ (204) или ошибку (400)
+    """
     dep = db.get_or_404(Department, department_id)
     if len(dep.users) or len(dep.asset_type_options) or len(dep.tickets):
         return "Нельзя удалить! Этот отдел используется!", 400

@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 
-from flask import Blueprint, render_template, request, abort, url_for
+from flask import Blueprint, render_template, request, abort
 
 from app.reports.report import Report
 from app.users.models import Roles
@@ -8,6 +8,7 @@ from app.users.utils import role_required
 
 bp = Blueprint("reports", __name__, url_prefix="/reports", template_folder="templates")
 
+# Возможные периоды, для построения отчёта
 PERIODS = {
     "week": (
         "за эту неделю",
@@ -27,6 +28,11 @@ PERIODS = {
 @bp.route("/")
 @role_required(Roles.DIRECTOR)
 def index():
+    """обработчик, для вывода страницы отчётов
+
+    Выводит доступные отчёты, данные для текущего отчёта.
+    Так же можно выбрать период и сортировать отчёты по любой колонке как по возрастанию, так и по убыванию
+    """
     report_id = request.args.get("report_id", "by_worker")
     period = request.args.get("period", "week").lower()
     if period not in PERIODS:
@@ -43,7 +49,7 @@ def index():
         sort_column = int(sort_column)
         sort_column = min(sort_column, len(active_report.columns) - 1)
 
-    if sort_order not in ("a","d"):
+    if sort_order not in ("a", "d"):
         sort_order = "a"
 
     if report_id not in Report.all_reports:
@@ -72,5 +78,5 @@ def index():
         periods=PERIODS,
         sort_column=sort_column,
         sort_order=sort_order,
-        new_sort_order="d" if sort_order=="a" else "a"
+        new_sort_order="d" if sort_order == "a" else "a"
     )
