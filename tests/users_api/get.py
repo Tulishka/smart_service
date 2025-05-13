@@ -3,13 +3,13 @@ import requests
 
 # Получение всех пользователей
 pprint(requests.get(
-    "http://127.0.0.1:5000/api/users?apikey=CD3rlxIXQ0pGVrE72r1n33MBhH1Q5I4xd2eTgHOxBbq9HTN5BdVVZ4c3gfgNlY0").json())
+    "http://127.0.0.1:5000/api/users?apikey=___SECRET____API__KEY___1").json())
 
 print("=" * 20)
 
 # Получение пользователя с id=1
 pprint(requests.get(
-    "http://127.0.0.1:5000/api/users/1?apikey=CD3rlxIXQ0pGVrE72r1n33MBhH1Q5I4xd2eTgHOxBbq9HTN5BdVVZ4c3gfgNlY0").json())
+    "http://127.0.0.1:5000/api/users/1?apikey=___SECRET____API__KEY___1").json())
 
 print("=" * 20)
 
@@ -24,5 +24,5 @@ print('=' * 20)
 
 # Запрос на получение пользователя с ошибочным id
 pprint(requests.get(
-    "http://127.0.0.1:5000/api/users/2232?apikey=CD3rlxIXQ0pGVrE72r1n33MBhH1Q5I4xd2eTgHOxBbq9HTN5BdVVZ4c3gfgNlY0")
+    "http://127.0.0.1:5000/api/users/2232?apikey=___SECRET____API__KEY___1")
        .json())
