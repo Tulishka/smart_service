@@ -22,6 +22,13 @@ class Config(object):
         print("USERS_API_KEYS read error")
         USERS_API_KEYS = {secrets.token_urlsafe(64)}
 
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_size": 10,
+        "max_overflow": 5,
+        "pool_recycle": 1000,
+        "pool_pre_ping": True,
+    }
+
 
 class ProductionConfig(Config):
     DEBUG = False
@@ -36,3 +43,4 @@ class TestingConfig(Config):
     DEVELOPMENT = True
     DEBUG = True
     TESTING = True
+    SQLALCHEMY_ECHO = True
