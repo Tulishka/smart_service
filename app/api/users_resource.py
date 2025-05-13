@@ -99,8 +99,8 @@ def set_password_or_400(user, password):
 def put_department_or_409(user, department):
     """Функция проверки существования департамента и устанавливающаяв его в таком случае
 
-    :param user:
-    :param department:
+    :param user: Объект пользователя
+    :param department: Id департамента
     :return: Ошибка / None
     """
     if Department.query.get(department):
