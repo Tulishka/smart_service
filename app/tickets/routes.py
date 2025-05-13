@@ -27,6 +27,10 @@ TICKET_FILTERS = {
 @bp.route("/", methods=["GET"])
 @role_required(Roles.WORKER)
 def ticket_list():
+    """Отображает список заявок с возможностью фильтрации
+
+    :returns: Страница со списком заявок
+    """
     args = request.args.to_dict()
 
     query = Ticket.query
@@ -54,6 +58,11 @@ def ticket_list():
 @bp.route("/<int:ticket_id>", methods=["GET", "POST"])
 @role_required(Roles.WORKER)
 def edit(ticket_id):
+    """Редактирование заявки
+
+    :param ticket_id: ID заявки
+    :returns: Страница редактирования заявки или редирект
+    """
     ticket = db.get_or_404(Ticket, ticket_id)
     if not ticket.is_closed or request.method == "GET":
         form = OpenTicketForm()
@@ -69,7 +78,6 @@ def edit(ticket_id):
         form.result.data = ticket.result.value
 
     if form.validate_on_submit():
-
         message = "Изменения сохранены", "success"
         action = form.submit.data
         if ticket.status == TicketStatus.OPENED:
@@ -128,6 +136,11 @@ def edit(ticket_id):
 @bp.route("/new/<asset_uid>", methods=["GET", "POST"])
 @login_required
 def asset_detail(asset_uid):
+    """Создание новой заявки
+
+    :param asset_uid: UID асета
+    :returns: страница создания заявки или редирект
+    """
     asset = Asset.query.filter_by(uid=uuid.UUID(asset_uid)).one_or_none()
     if not asset:
         abort(404)
