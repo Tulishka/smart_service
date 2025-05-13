@@ -10,7 +10,7 @@ from flask_restful import Resource, abort
 from flask import jsonify, request
 
 from app.users.models import User, Role, Department, users_roles
-from app.users.parsers import standart_parser, unrequired_parser, login_parser
+from app.users.parsers import standart_parser, unrequired_parser
 
 from functools import wraps
 
@@ -70,11 +70,7 @@ def user_to_dict(user):
     """Функция преобразования объекта пользователя в словарь
 
     :param user: Объект пользователя
-    :return: Словарь с данными о пользователе для вывода в формате:
-            id: Уникальный идентификатор пользователя
-            name: Имя пользователя
-            department: Отдел пользователя (Если имеется)
-            roles Роли пользователя
+    :return: Словарь с данными о пользователе
     """
     return {
         "id": user.id,

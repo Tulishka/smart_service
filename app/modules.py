@@ -23,5 +23,5 @@ def register_blueprints(app):
 def api_setup(app):
     api = Api(app)
 
-    api.add_resource(UsersResource, "/api/users/<int:user_id>")
-    api.add_resource(UsersListResource, "/api/users")
+    api.add_resource(UsersResource, "/api/v1/users/<int:user_id>")
+    api.add_resource(UsersListResource, "/api/v1/users")
