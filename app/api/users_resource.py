@@ -196,8 +196,8 @@ class UsersListResource(Resource):
         user.name = args["name"]
         user.phone = args["phone"]
 
-        if "department_id" in args.keys():
-            put_department_or_409(user, new_user_data["department_id"])
+        if args["department_id"] is not None:
+            put_department_or_409(user, args["department_id"])
 
         set_password_or_400(user, args["password"])
         db.session.add(user)
