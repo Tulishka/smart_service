@@ -59,7 +59,7 @@ class AssetListResource(BaseResource):
         """Получение всех асетов"""
 
         assets = pagination(Asset.query)
-        return pagination_response(assets, [AssetResource._asset_to_dict(a) for a in assets.items])
+        return pagination_response(assets, [AssetResource._asset_to_dict(a) for a in assets.items],"assets")
 
     def post(self):
         """Создание нового асета"""

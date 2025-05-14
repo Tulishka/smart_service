@@ -149,7 +149,7 @@ class UsersListResource(BaseResource):
         :return: JSON файл об информации о всех пользователях / ошибке
         """
         users = pagination(User.query)
-        response = pagination_response(users, [user_to_dict(user) for user in users])
+        response = pagination_response(users, [user_to_dict(user) for user in users], "users")
         return response
 
     def post(self):

@@ -69,7 +69,7 @@ class TicketListResource(BaseResource):
         """Получение всех заявок"""
 
         tickets = pagination(Ticket.query)
-        return pagination_response(tickets, [TicketResource._ticket_to_dict(t) for t in tickets.items])
+        return pagination_response(tickets, [TicketResource._ticket_to_dict(t) for t in tickets.items], "tickets")
 
     def post(self):
         """Создание новой заявки"""
