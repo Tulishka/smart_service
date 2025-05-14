@@ -167,6 +167,17 @@ python run.py
 
 > Проект будет доступен по адресу `http://localhost:5000`
 
+### Тесты API (pytest)
+
+1. Установить dev-зависимости:
+```bash
+pip install -r dev-requirements.txt
+```
+2. Запустить тесты:
+```bash
+pytest
+```
+
 ### Авторы
 
 - Прийменко Ирина
