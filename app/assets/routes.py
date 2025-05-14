@@ -1,70 +1,76 @@
+"""
+Модуль, включающий в себя обработчики страниц, связанные с асетами
+
+Представлены обработчики:
+- /: Список всех асетов
+- /codes: QR-коды асетов на печать
+- /codes_proccess: Страница-маршрутизатор для обработки отправленной на неё формы
+- /type/<type_id>: Страница с изменением вида асетов
+- /types: Страница со списком всех видов асетов
+- /<asset_id> - Страница с изменением асета
+"""
+
+
 import json
-import os
 import uuid
 
 from flask import Blueprint, render_template, request, flash, url_for, redirect
 from markupsafe import Markup
 
 from app import db
-from app.config import Config
 from app.assets.forms import AssetTypeForm, AssetForm
 from app.assets.models import AssetType, AssetTypeOption, Asset, AssetStatus
-from app.core import utils
-from app.users.models import Department, Roles
 from app.assets.qr import create_qr_if_need
+from app.config import Config
+from app.core import utils
+from app.core.filter_utils import apply_filter
+from app.users.models import Department, Roles
 from app.users.utils import role_required
 
 bp = Blueprint("assets", __name__, url_prefix="/assets", template_folder="templates")
 
-os.makedirs(f"app/{Config.MEDIA_FOLDER}/uploads", exist_ok=True)
-os.makedirs(f"app/{Config.MEDIA_FOLDER}/qr", exist_ok=True)
+ASSET_FILTERS = {
+    "type": lambda value: Asset.type_id == int(value),
+    "status": lambda value: Asset.status == ["ACTIVE", "INACTIVE", "MAINTENANCE"][int(value)],
+}
 
 
 @bp.route("/")
 @role_required(Roles.ASSET_MANAGER)
 def index():
-    args = request.args.to_dict()
+    """Обработчик для страницы списка асетов
 
+    :return: HTML-страница со списком асетов
+    """
     query = Asset.query
-    types_variations = [type_.name for type_ in AssetType.query.all()]
+    args = request.args.to_dict()
+    types_variations = [(type_.id, type_.name) for type_ in AssetType.query.all()]
 
-    if "type" in args:
-        try:
-            type_id = int(args["type"])
-            query = query.filter(Asset.type_id == type_id)
-            if not query:
-                raise Exception("there were no assets with this id")
-        except Exception as ex:
-            flash(F"Ошибка при обработке параметра type. Проверьте корректность запроса | {ex}",
-                  category="danger")
-            return redirect(url_for("assets.index"))
-
-    if "status" in args:
-        try:
-            status_id = int(args["status"])
-            statuses = {0: "ACTIVE", 1: "INACTIVE", 2: "MAINTENANCE"}
-            status = statuses[status_id]
-            query = query.filter(Asset.status == status)
-        except Exception as ex:
-            flash(F"Ошибка при обработке параметра status. Проверьте корректность запроса | {ex}",
-                  category="danger")
-            return redirect(url_for("assets.index"))
-
+    # Фильтрация асетов по заданным на странице значениям
+    assets = []
     try:
-        assets = query.all()
-    except Exception as ex:
-        flash(F"Не удалось осуществить запрос к БД. | {ex}",
-              category="danger")
-        assets = []
+        assets = apply_filter(query, ASSET_FILTERS, args).all()
+    except ValueError as e:
+        flash(str(e), "danger")
+    except Exception:
+        flash(f"Не удалось осуществить запрос с текущими параметрами", "danger")
 
-    return render_template("assets_list.html",
-                           assets=assets,
-                           types_var=types_variations)
+    return render_template(
+        "assets_list.html",
+        assets=assets,
+        types_var=types_variations
+    )
 
 
 @bp.route("/codes")
 @role_required(Roles.ASSET_MANAGER)
 def codes():
+    """Обработчик для страницы с QR кодами на печать
+
+    :return: HTML-страница с QR кодами
+    """
+
+    # Получение QR кодов по id асетов из query параметров
     error_message = ""
     try:
         args = request.args.to_dict()["assets"]
@@ -80,7 +86,6 @@ def codes():
             }
             for asset in assets
         ]
-
         if not assets_data:
             error_message = F"По данным id ничего не найдено."
 
@@ -94,6 +99,11 @@ def codes():
 @bp.route("/codes_process", methods=["POST"])
 @role_required(Roles.ASSET_MANAGER)
 def codes_process():
+    """Обработчик для промежуточной страницы после отправки формы на печать QR.
+    Группирует данные формы в query-параметры и выполняет переадресацию к обработчику assets.codes
+
+    :return: Перенаправление на страницу .../codes
+    """
     selected_ids = ",".join(request.form.getlist('checkboxes'))
     return redirect(url_for("assets.codes", assets=selected_ids))
 
@@ -101,10 +111,16 @@ def codes_process():
 @bp.route("/type/<int:type_id>", methods=["GET", "POST"])
 @role_required(Roles.ASSET_MANAGER)
 def edit_type(type_id=0):
+    """Обработчик для страницы с изменением вида асетов
+
+    :param type_id: id вида асетов
+    :return: HTML страница с формой для работы с видом асетов / переадресация на страницу с видами (успешное изменение)
+    """
+
+    # Полчение данных о виде асетов (если существует)
     asset_type = db.session.query(AssetType).filter_by(id=type_id).one_or_none()
     departments = [{"id": dep.id, "name": dep.name} for dep in Department.query.all()]
     options = []
-
     if asset_type:
         options = [
             {
@@ -125,13 +141,18 @@ def edit_type(type_id=0):
     else:
         form = AssetTypeForm()
 
+    # Обработка отправки пользователем формы с видом асетов
     if request.method == "POST":
         if form.validate_on_submit():
+
+            # Получение опций вида асетов (Если имеются)
             options_data = request.form.get('options_data', '[]')
             options = json.loads(options_data)
 
+            # Проверка названия вида асетов на уникальность
             if AssetType.query.filter((AssetType.name == form.name.data) & (AssetType.id != type_id)).first():
-                form.name.errors = ("название вида асета занято",)
+                form.name.errors = ("название вида асетов занято",)
+
             else:
                 if not asset_type:
                     asset_type = AssetType()
@@ -162,7 +183,7 @@ def edit_type(type_id=0):
                             title=opt_data['title'],
                             description=opt_data['description'],
                             department_id=opt_data['department_id'] or None,
-                            order=0  # Можно добавить логику для порядка
+                            order=0  # Для логики порядка
                         )
                     else:
                         # Существующая опция
@@ -198,6 +219,10 @@ def edit_type(type_id=0):
 @bp.get("/types")
 @role_required(Roles.ASSET_MANAGER)
 def types():
+    """Обработчик для страницы со списком вида асетов
+
+    :return: HTML-страница со списком вида асетов
+    """
     data = AssetType.query.all()
     return render_template("types_list.html", data=data)
 
@@ -205,6 +230,11 @@ def types():
 @bp.delete("/types/<int:type_id>")
 @role_required(Roles.ASSET_MANAGER)
 def delete_type(type_id: int):
+    """Обработчик удаления вида асетов
+
+    :param type_id: id вида асетов
+    :return: Ошибка / Пустая строка
+    """
     atype = db.get_or_404(AssetType, type_id)
     if len(atype.assets):
         return "Нельзя удалить! Этот вид асета используется!", 400
@@ -218,11 +248,20 @@ def delete_type(type_id: int):
 @bp.route("/<int:asset_id>", methods=["GET", "POST"])
 @role_required(Roles.ASSET_MANAGER)
 def edit(asset_id=0, type_id=0):
+    """Обработчик для страницы изменения асета
+
+    :param asset_id: id асета
+    :param type_id: id вида асетов
+    :return: HTML-страница со списком асетов / формой заполнения асета / списком вида асетов. (Зависит от результата)
+    """
+
+    # Получение асета (если существует)
     asset = Asset.query.filter_by(id=asset_id).one_or_none()
     types = AssetType.query.all()
     type_id = type_id or request.args.get("type_id")
 
     if request.method == "GET":
+        # Если пользоватль запрашивает данные на изменение сущ. асета - заполняем все поля. Иначе - только вид асета
         if asset:
             form = AssetForm(
                 name=asset.name,
@@ -235,17 +274,21 @@ def edit(asset_id=0, type_id=0):
         else:
             form = AssetForm(type_id=type_id)
 
+        # Возможные выборы для присвоения видов асета к асету
         form.type_id.choices = [(type.id, type.name) for type in types]
     else:
         form = AssetForm()
         form.type_id.choices = [(type.id, type.name) for type in types]
+
         if form.validate_on_submit():
+            # Проверка названия асета на уникальность
             if Asset.query.filter((Asset.name == form.name.data) & (Asset.id != asset_id)).first():
                 form.name.errors = ("название асета занято",)
+
             else:
                 if not asset:
                     asset = Asset()
-                    asset.uid = uuid.uuid4()
+                    asset.uid = uuid.uuid4()  # Установка уникального идентификатора асета
 
                 if not form.image.data:
                     image_address = asset.image if asset else None
@@ -263,14 +306,16 @@ def edit(asset_id=0, type_id=0):
                 db.session.add(asset)
                 db.session.commit()
 
+                # Создаём QR код к асету, в случае, если он был создан впервые
+                # и в этом же случае предлагаем ему перейти на страницу печати QR этого асета
                 result = create_qr_if_need(asset.uid)
                 if result:
                     html_link = (F"<a href='{Config.APP_HOST}/assets/codes?assets={asset.id}' class='alert-link'>"
                                  F"Перейти на страницу печати QR-кода.</a>")
                 else:
                     html_link = ''
-                flash(Markup(f"Асет {asset.name} сохранён. {html_link}"), category="info")
 
+                flash(Markup(f"Асет {asset.name} сохранён. {html_link}"), category="info")
                 if type_id:
                     return redirect(url_for("assets.types"))
                 return redirect(url_for("assets.index"))

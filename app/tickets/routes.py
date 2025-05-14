@@ -7,6 +7,7 @@ from flask_login import current_user, login_required
 
 from app import db
 from app.assets.models import Asset, AssetTypeOption
+from app.core.filter_utils import apply_filter
 from app.tickets.forms import OptionForm, OpenTicketForm, ClosedTicketForm
 from app.tickets.models import Ticket, TicketStatus, TicketResults
 from app.users.models import Department, User, Roles
@@ -14,82 +15,54 @@ from app.users.utils import role_required
 
 bp = Blueprint('tickets', __name__, url_prefix='/tickets', template_folder="templates")
 
+TICKET_FILTERS = {
+    "asset": lambda value: Ticket.asset.has(uid=uuid.UUID(value)),
+    "department": lambda value: Ticket.department_id == int(value),
+    "operator": lambda value: Ticket.assignee.has(auid=uuid.UUID(value)),
+    "status": lambda value: Ticket.status == ["OPENED", "CLOSED"][int(value)],
+    "result": lambda value: Ticket.result == ["NEW", "IN_WORK", "DONE", "FAIL", "CANCELED"][int(value)],
+}
+
 
 @bp.route("/", methods=["GET"])
 @role_required(Roles.WORKER)
 def ticket_list():
+    """Отображает список заявок с возможностью фильтрации
+
+    :returns: Страница со списком заявок
+    """
     args = request.args.to_dict()
 
     query = Ticket.query
     assets = list({(ticket.asset.uid, ticket.asset.name) for ticket in Ticket.query.all()})
-    departments = [department.name for department in Department.query.all()]
-    operators = [(operator.auid, operator.name) for operator in User.query.filter(User.roles.any(id=2)).all()]
+    departments = [(department.id, department.name) for department in Department.query.all()]
+    operators = [(operator.auid, operator.name) for operator in User.query.all()]
 
-    if "asset" in args:
-        try:
-            asset_uid = str(args["asset"])
-            query = query.filter(Ticket.asset.has(uid=uuid.UUID(asset_uid)))
-        except Exception as ex:
-            flash(F"Не удалось обработать параметр асета | {ex}", category="danger")
-            return redirect(url_for("tickets.ticket_list"))
-
-    if "department" in args:
-        try:
-            department_id = int(args["department"])
-            query = query.filter(Ticket.department_id == department_id)
-        except Exception as ex:
-            flash(F"Не удалось обработать параметр отдела | {ex}")
-            return redirect(url_for("tickets.ticket_list"))
-
-    if "operator" in args:
-        try:
-            operator_auid = args["operator"]
-            query = query.filter(Ticket.assignee.has(auid=uuid.UUID(operator_auid)))
-        except Exception as ex:
-            flash(F"Не удалось обработать параметр исполнителя | {ex}", category="danger")
-            return redirect(url_for("tickets.ticket_list"))
-
-    if "status" in args:
-        try:
-            status_id = int(args["status"])
-
-            statuses = {0: "OPENED", 1: "CLOSED"}
-            status = statuses[status_id]
-
-            query = query.filter(Ticket.status == status)
-        except Exception as ex:
-            flash(F"Не удалось обработать параметр статуса | {ex}", category="danger")
-            return redirect(url_for("tickets.ticket_list"))
-
-    if "result" in args:
-        try:
-            result_id = int(args["result"])
-
-            results = {0: "NEW", 1: "IN_WORK", 2: "DONE", 3: "FAIL", 4: "CANCELED"}
-            result = results[result_id]
-
-            query = query.filter(Ticket.result == result)
-        except Exception as ex:
-            flash(F"Не удалось обработать параметр результата | {ex}", category="danger")
-            return redirect(url_for("tickets.ticket_list"))
-
+    tickets = []
     try:
-        tickets = query.all()
-    except Exception as ex:
-        flash(F"Не удалось осуществить запрос к БД | {ex}",
-              category="danger")
-        tickets = []
+        tickets = apply_filter(query, TICKET_FILTERS, args).all()
+    except ValueError as ex:
+        flash(str(ex), "danger")
+    except Exception:
+        flash(F"Не удалось осуществить запрос к БД", "danger")
 
-    return render_template("ticket_list.html",
-                           tickets=tickets,
-                           assets=assets,
-                           departments=departments,
-                           operators=operators)
+    return render_template(
+        "ticket_list.html",
+        tickets=tickets,
+        assets=assets,
+        departments=departments,
+        operators=operators
+    )
 
 
 @bp.route("/<int:ticket_id>", methods=["GET", "POST"])
 @role_required(Roles.WORKER)
 def edit(ticket_id):
+    """Редактирование заявки
+
+    :param ticket_id: ID заявки
+    :returns: Страница редактирования заявки или редирект
+    """
     ticket = db.get_or_404(Ticket, ticket_id)
     if not ticket.is_closed or request.method == "GET":
         form = OpenTicketForm()
@@ -105,7 +78,6 @@ def edit(ticket_id):
         form.result.data = ticket.result.value
 
     if form.validate_on_submit():
-
         message = "Изменения сохранены", "success"
         action = form.submit.data
         if ticket.status == TicketStatus.OPENED:
@@ -164,6 +136,11 @@ def edit(ticket_id):
 @bp.route("/new/<asset_uid>", methods=["GET", "POST"])
 @login_required
 def asset_detail(asset_uid):
+    """Создание новой заявки
+
+    :param asset_uid: UID асета
+    :returns: страница создания заявки или редирект
+    """
     asset = Asset.query.filter_by(uid=uuid.UUID(asset_uid)).one_or_none()
     if not asset:
         abort(404)

@@ -9,6 +9,8 @@ from app.tickets.models import TicketStatus, TicketResults
 
 
 class OptionForm(FlaskForm):
+    """Форма для создания заявки"""
+
     option = RadioField('Что бы создать заявку выберите опцию', validators=[DataRequired()])
     description = TextAreaField(
         'Дополнительные сведения',
@@ -21,6 +23,8 @@ class OptionForm(FlaskForm):
 
 
 class OpenTicketForm(FlaskForm):
+    """Форма для изменения открытой заявки"""
+
     department = SelectField('Отдел', coerce=int)
     status = SelectField('Статус',
                          choices=[(status.value, status.value) for status in TicketStatus])
@@ -30,6 +34,8 @@ class OpenTicketForm(FlaskForm):
 
 
 class ClosedTicketForm(FlaskForm):
+    """Форма для закрытой заявки (позволяет изменить только поле статус)"""
+
     department = StringField('Отдел')
 
     status = SelectField('Статус',

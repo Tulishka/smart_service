@@ -9,3 +9,4 @@ qrcode
 pillow
 markupsafe
 psycopg2-binary
+wtforms

@@ -1,6 +1,22 @@
 {% extends "base.html" %}
 
 {% block content %}
+    <style>
+        .order_a:after {
+            content: '\25B2';
+        }
+        .order_d:after {
+            content: '\25BC';
+        }
+        .no_order:after {
+            content: '\25BC';
+            opacity: 0;
+        }
+        .sort-link {
+            text-decoration: none;
+            color: black;
+        }
+    </style>
   <ul class="nav nav-underline mb-3">
   {% for report in all_reports %}
     <li class="nav-item">
@@ -26,7 +42,17 @@
   <tr>
     <th scope="col">#</th>
   {% for column_name in active_report.columns %}
-    <th scope="col">{{ column_name }}</th>
+    <th scope="col"
+        {% if loop.index0 == sort_column %}
+            class="order_{{ sort_order }}"
+        {% else %}
+            class="no_order"
+        {% endif %}
+    >
+        <a class="sort-link" href="{{ url_for('reports.index', report_id=active_report.id, period=period, sort_column=loop.index0, sort_order=new_sort_order if loop.index0 == sort_column else sort_order) }}">
+            {{ column_name }}
+        </a>
+    </th>
   {% endfor %}
   </tr>
   </thead>
