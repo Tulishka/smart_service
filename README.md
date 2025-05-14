@@ -115,7 +115,7 @@ smart_service/
 - убедитесь что SSL сертификаты успешно получены
 
    ```bash
-   docker compose up sertbot
+   docker compose up certbot
    ```
 
 - запуск проекта
