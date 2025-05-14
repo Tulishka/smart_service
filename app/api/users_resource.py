@@ -6,39 +6,13 @@
 - UsersResource: Работа с отдельными пользователями по id (get, put, delete запросы)
 """
 
-from flask_restful import Resource, abort
-from flask import jsonify, request
-
-from app.users.models import User, Role, Department, users_roles
-from app.users.parsers import standart_parser, unrequired_parser
-
-from functools import wraps
-
-from flask_login import current_user, login_user
+from flask import jsonify
+from flask_restful import abort
 
 from app import db
-
-from app.config import Config
-
-
-def api_key_required(f):
-    """Декоратор для проверки корректности ключа API
-
-    :param f: Входящая функция
-    :return: Результат функции после проверки ключа API
-    """
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        apikey = request.args.get('apikey')
-        # Случай отсутствия ключа API в query параметрах
-        if not apikey:
-            abort(401, message="API key is missing")
-
-        # Случай передачи неверного ключа API в параметрах
-        if apikey not in Config.USERS_API_KEYS:
-            abort(403, message="Invalid API key")
-        return f(*args, **kwargs)
-    return decorated
+from app.api.common import BaseResource, pagination, pagination_response
+from app.api.parsers.users import user_update_parser, user_parser
+from app.users.models import User, Department, users_roles
 
 
 def user_or_404(user_id, get_user_obj=False):
@@ -75,11 +49,10 @@ def user_to_dict(user):
     return {
         "id": user.id,
         "name": user.name,
-        "department": Department.query.filter_by(id=user.department_id).first().name if user.department_id is not None
-        else "ОТСУТСТВУЕТ",
+        "department": user.department.name if user.department else "ОТСУТСТВУЕТ",
         "roles": [role.name for role in user.roles],
         "phone": user.phone,
-        "status": "ДОСТУПЕН" if user.status.name == "ACTIVE" else "НЕ ДОСТУПЕН"
+        "status": user.status.value
     }
 
 
@@ -96,7 +69,7 @@ def set_password_or_400(user, password):
         abort(400, message=F"the password length must be >= 5")
 
 
-def put_department_or_409(user, department):
+def put_department_or_404(user, department):
     """Функция проверки существования департамента и устанавливающаяв его в таком случае
 
     :param user: Объект пользователя
@@ -106,12 +79,12 @@ def put_department_or_409(user, department):
     if Department.query.get(department):
         user.department_id = department
     else:
-        abort(409, message="Department with this id is not exist")
+        abort(404, message="Department with this id is not exist")
 
 
-class UsersResource(Resource):
+class UsersResource(BaseResource):
     """Класс для реализации работы API запросов к конкретному пользователю через его id"""
-    @api_key_required
+
     def get(self, user_id):
         """GET-запрос для получения информации о пользователе в формате JSON
 
@@ -121,7 +94,6 @@ class UsersResource(Resource):
         user = user_or_404(user_id)
         return jsonify({"users": user})
 
-    @api_key_required
     def delete(self, user_id):
         """DELETE-запрос для удаления пользователя (Во избежание ошибок нужно использовать с осторожностью!)
 
@@ -136,7 +108,6 @@ class UsersResource(Resource):
         db.session.commit()
         return jsonify({"success": "OK"})
 
-    @api_key_required
     def put(self, user_id):
         """PUT-запрос для изменения пользователя
 
@@ -146,7 +117,7 @@ class UsersResource(Resource):
 
         # Получение пользователя и аргументов, на которые есть необходимость изменить данные пользователя
         user = user_or_404(user_id, get_user_obj=True)
-        args = unrequired_parser.parser.parse_args()
+        args = user_update_parser.parser.parse_args()
 
         new_user_data = {}  # Словарь с данными, которые необходимо изменить в объекте пользователя
         for key, value in args.items():
@@ -160,7 +131,7 @@ class UsersResource(Resource):
             abort_if_user_exists(new_user_data["phone"])  # Проверка уникальности телефона
 
         if "department_id" in new_user_data.keys():
-            put_department_or_409(user, new_user_data["department_id"])
+            put_department_or_404(user, new_user_data["department_id"])
 
         if "password" in new_user_data.keys():
             set_password_or_400(user, new_user_data["password"])
@@ -169,18 +140,18 @@ class UsersResource(Resource):
         return jsonify({"success": "OK"})
 
 
-class UsersListResource(Resource):
+class UsersListResource(BaseResource):
     """Класс для реализации общих API запросов к пользователям"""
-    @api_key_required
+
     def get(self):
         """GET-запрос для получения информации о всех пользователях в формате JSON
 
         :return: JSON файл об информации о всех пользователях / ошибке
         """
-        users = list(map(lambda x: user_to_dict(x), User.query.all()))
-        return jsonify({"users": users})
+        users = pagination(User.query)
+        response = pagination_response(users, [user_to_dict(user) for user in users])
+        return response
 
-    @api_key_required
     def post(self):
         """POST-запрос для регистрации пользователя в системе
 
@@ -188,7 +159,7 @@ class UsersListResource(Resource):
         """
 
         # Получение аргументов, фигурирующих в объекте пользователя, которого нужно добавить
-        args = standart_parser.parser.parse_args()
+        args = user_parser.parser.parse_args()
         abort_if_user_exists(args["phone"])
 
         user = User()
@@ -197,7 +168,7 @@ class UsersListResource(Resource):
         user.phone = args["phone"]
 
         if args["department_id"] is not None:
-            put_department_or_409(user, args["department_id"])
+            put_department_or_404(user, args["department_id"])
 
         set_password_or_400(user, args["password"])
         db.session.add(user)
