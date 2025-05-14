@@ -8,7 +8,6 @@
 - TestingConfig: Тест-конфигурация приложения
 """
 
-
 import json
 import os
 import secrets
@@ -39,6 +38,10 @@ class Config(object):
         print("USERS_API_KEYS read error")
         USERS_API_KEYS = {secrets.token_urlsafe(64)}
 
+
+class ProductionConfig(Config):
+    """Класс конфигурации продакш версии приложения"""
+    DEBUG = False
     # Настройки движка SQLA
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_size": 10,
@@ -46,11 +49,6 @@ class Config(object):
         "pool_recycle": 1000,
         "pool_pre_ping": True,
     }
-
-
-class ProductionConfig(Config):
-    """Класс конфигурации продакш версии приложения"""
-    DEBUG = False
 
 
 class DevelopmentConfig(Config):
@@ -64,4 +62,6 @@ class TestingConfig(Config):
     DEVELOPMENT = True
     DEBUG = True
     TESTING = True
-    SQLALCHEMY_ECHO = True
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    SQLALCHEMY_ENGINE_OPTIONS = {}
+    USERS_API_KEYS = ['TEST_API_KEY']

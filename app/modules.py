@@ -3,10 +3,11 @@
 
 """
 
-
 from flask_restful import Api
 
+from app.api.assets_resource import AssetListResource, AssetTypeResource, AssetResource
 from app.api.routes import bp as api_bp
+from app.api.tickets_resource import TicketResource, TicketListResource
 from app.api.users_resource import UsersResource, UsersListResource
 from app.assets.routes import bp as assets_bp
 from app.auth.routes import bp as auth_bp
@@ -35,6 +36,12 @@ def api_setup(app):
 
     :param app: Объект приложения
     """
-    api = Api(app)
-    api.add_resource(UsersResource, "/api/v1/users/<int:user_id>")
-    api.add_resource(UsersListResource, "/api/v1/users")
+    api = Api(app, prefix="/api/v1/")
+
+    api.add_resource(UsersResource, "users/<int:user_id>")
+    api.add_resource(UsersListResource, "users")
+    api.add_resource(AssetResource, "assets/<int:asset_id>")
+    api.add_resource(AssetListResource, "assets")
+    api.add_resource(AssetTypeResource, "asset_types")
+    api.add_resource(TicketResource, "tickets/<int:ticket_id>")
+    api.add_resource(TicketListResource, "tickets")
