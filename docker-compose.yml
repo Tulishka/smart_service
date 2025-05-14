@@ -26,6 +26,7 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
       - ./nginx/ssl:/etc/letsencrypt
       - ./app/static:/static
+      - ./app/media:/media
     restart: unless-stopped
 
   certbot:
