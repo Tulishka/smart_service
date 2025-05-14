@@ -1,4 +1,4 @@
-from flask import request, jsonify
+from flask import request, jsonify, current_app
 from flask_restful import Resource, reqparse, abort
 from sqlalchemy.orm import Query, QueryPropertyDescriptor
 
@@ -27,7 +27,7 @@ def api_key_required(f):
             abort(401, message="API key is missing")
 
         # Случай передачи неверного ключа API в параметрах
-        if apikey not in Config.USERS_API_KEYS:
+        if apikey not in current_app.config["USERS_API_KEYS"]:
             abort(403, message="Invalid API key")
         return f(*args, **kwargs)
 
@@ -49,7 +49,7 @@ def handle_db_errors(f):
 
 
 class BaseResource(Resource):
-    method_decorators = [handle_db_errors, api_key_required]
+    method_decorators = [api_key_required]
 
 
 def pagination(query):

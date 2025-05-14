@@ -22,9 +22,7 @@ def user_or_404(user_id, get_user_obj=False):
     :param get_user_obj: Что возвращает функция (False - словарь с данными пользователя, True - объект)
     :return: (Словарь/объект пользователя)
     """
-    user = User.query.get(user_id)
-    if not user:
-        abort(404, message=F"User {user_id} not found")
+    user = User.query.get_or_404(user_id)
     if get_user_obj:
         return user
     return user_to_dict(user)
@@ -117,7 +115,7 @@ class UsersResource(BaseResource):
 
         # Получение пользователя и аргументов, на которые есть необходимость изменить данные пользователя
         user = user_or_404(user_id, get_user_obj=True)
-        args = user_update_parser.parser.parse_args()
+        args = user_update_parser.parse_args()
 
         new_user_data = {}  # Словарь с данными, которые необходимо изменить в объекте пользователя
         for key, value in args.items():
@@ -159,7 +157,7 @@ class UsersListResource(BaseResource):
         """
 
         # Получение аргументов, фигурирующих в объекте пользователя, которого нужно добавить
-        args = user_parser.parser.parse_args()
+        args = user_parser.parse_args()
         abort_if_user_exists(args["phone"])
 
         user = User()

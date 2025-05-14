@@ -1,10 +1,12 @@
+from uuid import UUID
+
 from flask import jsonify
 from flask_restful import abort
 
 from app import db
 from app.api.common import BaseResource, pagination, pagination_response
 from app.api.parsers.assets import asset_update_parser, asset_parser
-from app.assets.models import Asset, AssetType
+from app.assets.models import Asset, AssetType, AssetStatus
 
 
 class AssetResource(BaseResource):
@@ -20,8 +22,8 @@ class AssetResource(BaseResource):
 
         if 'type_id' in args and args['type_id'] is not None:
             # Проверка существования вида асета
-            if not AssetType.query.get(args['type_id']):
-                abort(404, message=f"Вид асета с id = {args['type_id']} не найден")
+            if not AssetType.query.filter_by(id=args['type_id']).one_or_none():
+                abort(400, message=f"Вид асета с id = {args['type_id']} не найден")
 
         for key, value in args.items():
             if value is not None:
@@ -59,23 +61,23 @@ class AssetListResource(BaseResource):
         """Получение всех асетов"""
 
         assets = pagination(Asset.query)
-        return pagination_response(assets, [AssetResource._asset_to_dict(a) for a in assets.items],"assets")
+        return pagination_response(assets, [AssetResource._asset_to_dict(a) for a in assets.items], "assets")
 
     def post(self):
         """Создание нового асета"""
         args = asset_parser.parse_args()
 
         # Проверка существования вида асета
-        if not AssetType.query.get(args['type_id']):
-            abort(404, message=f"Вид асета с id = {args['type_id']} не найден")
+        if not AssetType.query.filter_by(id=args['type_id']).one_or_none():
+            abort(400, message=f"Вид асета с id = {args['type_id']} не найден")
 
         asset = Asset(
             name=args['name'],
             type_id=args['type_id'],
             address=args['address'],
-            uid=args['uid'],
+            uid=UUID(args['uid']),
             image=args.get('image'),
-            status=args['status'],
+            status=AssetStatus(args['status']),
             details=args.get('details')
         )
 

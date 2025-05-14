@@ -5,7 +5,7 @@ from flask import jsonify
 from app import db
 from app.api.common import BaseResource, pagination, pagination_response
 from app.api.parsers.tickets import ticket_update_parser, comment_parser, ticket_parser
-from app.tickets.models import Ticket, TicketStatus, TicketComment
+from app.tickets.models import Ticket, TicketStatus, TicketComment, TicketResults
 
 
 class TicketResource(BaseResource):
@@ -19,13 +19,19 @@ class TicketResource(BaseResource):
         args = ticket_update_parser.parse_args()
         ticket = Ticket.query.get_or_404(ticket_id)
 
-        if args['status'] == TicketStatus.CLOSED.value and not ticket.is_closed:
+        if 'status' in args:
+            args['status'] = TicketStatus(args['status']) if args['status'] else None
+        if 'result' in args:
+            args['result'] = TicketResults(args['result']) if args['result'] else None
+
+        if args['status'] == TicketStatus.CLOSED and not ticket.is_closed:
             ticket.closed = datetime.now()
 
         for key, value in args.items():
             if value is not None:
                 setattr(ticket, key, value)
 
+        db.session.add(ticket)
         db.session.commit()
         return jsonify(self._ticket_to_dict(ticket))
 
@@ -74,12 +80,14 @@ class TicketListResource(BaseResource):
     def post(self):
         """Создание новой заявки"""
         args = ticket_parser.parse_args()
+        args['status'] = TicketStatus(args['status']) if args['status'] else None
 
         ticket = Ticket(
             asset_id=args['asset_id'],
             description=args['description'],
             creator_id=args['creator_id'],
             status=args['status'],
+            result=TicketResults.NEW,
             assignee_id=args.get('assignee_id'),
             department_id=args.get('department_id'),
             option_id=args.get('option_id')
