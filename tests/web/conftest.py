@@ -54,6 +54,14 @@ def worker_client(flask, worker_user):
         flask_login.logout_user()
 
 
+@pytest.fixture(scope='function')
+def no_roles_client(flask, no_roles_user):
+    with flask.test_request_context(), flask.test_client() as _client:
+        flask_login.login_user(no_roles_user)
+        yield _client
+        flask_login.logout_user()
+
+
 @pytest.fixture(params=[u for u, _ in URLS_CLIENT_MAPPING])
 def web_parts_urls(request):
     return request.param

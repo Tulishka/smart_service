@@ -1,6 +1,5 @@
 import os
 
-
 os.environ["APP_SETTINGS"] = "app.config.TestingConfig"
 
 import uuid
@@ -45,72 +44,51 @@ def admin_user(db):
     return User.query.filter_by(phone="0").first()
 
 
-@pytest.fixture
-def asset_user(db):
-    user_roles = [Role.query.filter_by(name=Roles.ASSET_MANAGER.value).first()]
+def create_user_helper(db, name, phone, user_roles, status=UserStatus.ACTIVE, department=None) -> User:
     user = User(
-        name="AssetManager",
-        phone="80000000001",
-        status=UserStatus.ACTIVE,
+        name=name,
+        phone=phone,
+        status=status,
         roles=user_roles,
+        department=department,
     )
     db.session.add(user)
     db.session.commit()
     return user
+
+
+@pytest.fixture
+def asset_user(db):
+    user_roles = [Role.query.filter_by(name=Roles.ASSET_MANAGER.value).first()]
+    return create_user_helper(db, "AssetManager", "80000000001", user_roles)
 
 
 @pytest.fixture
 def worker_user(db):
     user_roles = [Role.query.filter_by(name=Roles.WORKER.value).first()]
-    user = User(
-        name="Worker",
-        phone="80000000002",
-        status=UserStatus.ACTIVE,
-        roles=user_roles,
-    )
-    db.session.add(user)
-    db.session.commit()
-    return user
+    return create_user_helper(db, "Worker", "80000000002", user_roles)
 
 
 @pytest.fixture
 def usermanager_user(db):
     user_roles = [Role.query.filter_by(name=Roles.USER_MANAGER.value).first()]
-    user = User(
-        name="UserManager",
-        phone="80000000003",
-        status=UserStatus.ACTIVE,
-        roles=user_roles,
-    )
-    db.session.add(user)
-    db.session.commit()
-    return user
+    return create_user_helper(db, "UserManager", "80000000003", user_roles)
 
 
 @pytest.fixture
 def director_user(db):
     user_roles = [Role.query.filter_by(name=Roles.DIRECTOR.value).first()]
-    user = User(
-        name="Director",
-        phone="80000000004",
-        status=UserStatus.ACTIVE,
-        roles=user_roles,
-    )
-    db.session.add(user)
-    db.session.commit()
-    return user
+    return create_user_helper(db, "Director", "80000000004", user_roles)
+
+
+@pytest.fixture
+def no_roles_user(db):
+    return create_user_helper(db, "Director", "80000000004", [])
 
 
 @pytest.fixture
 def user1(db):
-    user = User(
-        name="user1",
-        phone="81112223333",
-        status=UserStatus.ACTIVE
-    )
-    db.session.add(user)
-    db.session.commit()
-    return user
+    return create_user_helper(db, "user1", "81112223333", [])
 
 
 @pytest.fixture
