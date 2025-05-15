@@ -1,6 +1,13 @@
 import flask_login
 import pytest
 
+URLS_CLIENT_MAPPING = (
+    ("/users/", "usermanager_client"),
+    ("/tickets/", "worker_client"),
+    ("/reports/", "director_client"),
+    ("/assets/", "asset_client")
+)
+
 
 @pytest.fixture
 def auth_apikey(flask):
@@ -47,6 +54,6 @@ def worker_client(flask, worker_user):
         flask_login.logout_user()
 
 
-@pytest.fixture(params=("/assets/", "/users/", "/tickets/", "/reports/"))
+@pytest.fixture(params=[u for u, _ in URLS_CLIENT_MAPPING])
 def web_parts_urls(request):
     return request.param
