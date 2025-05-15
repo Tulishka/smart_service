@@ -1,4 +1,5 @@
-from tests.test_api.conftest import API_PREFIX, User
+from app.users.models import User
+from tests.test_api.conftest import API_PREFIX
 
 
 def test_create_user(client, auth_apikey):

@@ -1,9 +1,8 @@
-from conftest import Ticket, TicketStatus
+from app.tickets.models import Ticket, TicketStatus
 from tests.test_api.conftest import API_PREFIX
 
 
 def test_create_ticket(client, auth_apikey, user1, asset1):
-
     ticket_data = {
         "asset_id": asset1.id,
         "description": "Test description",
@@ -29,7 +28,6 @@ def test_get_ticket(client, auth_apikey, ticket1):
 
 
 def test_update_ticket(client, auth_apikey, asset1, ticket1):
-
     update_data = {"status": "ЗАКРЫТ"}
     response = client.put(
         f"{API_PREFIX}/tickets/{ticket1.id}",
@@ -42,7 +40,6 @@ def test_update_ticket(client, auth_apikey, asset1, ticket1):
 
 
 def test_delete_ticket(client, auth_apikey, ticket1, db):
-
     assert Ticket.query.filter_by(id=ticket1.id).one_or_none() is not None
 
     response = client.delete(f"{API_PREFIX}/tickets/{ticket1.id}", query_string=auth_apikey)
