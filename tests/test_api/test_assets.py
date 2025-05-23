@@ -43,7 +43,7 @@ def test_update_asset(client, auth_apikey, asset1):
     assert response.json["name"] == "Updated Asset Name"
 
 
-def test_delete_asset(client, auth_apikey, asset1):
+def test_delete_asset(client, auth_apikey, asset1, db):
 
     response = client.delete(f"{API_PREFIX}/assets/{asset1.id}", query_string=auth_apikey)
 
